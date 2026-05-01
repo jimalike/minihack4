@@ -1,0 +1,712 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#ffffff" />
+  <title>kindee — Eat Thai street food, safely</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            thai: ['"Noto Sans Thai"', 'Inter', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    html, body { background: #ffffff; }
+    body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    .th { font-family: 'Noto Sans Thai', Inter, sans-serif; }
+    /* hide scroll on chip rows */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    /* subtle press feedback */
+    button { -webkit-tap-highlight-color: transparent; }
+    .press:active { transform: scale(0.98); }
+    /* fade-in for view transitions */
+    .view { animation: fade .18s ease-out; }
+    @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  </style>
+</head>
+<body class="text-slate-900 min-h-screen">
+
+  <!-- App container — mobile-first frame -->
+  <div class="max-w-md mx-auto min-h-screen bg-white border-x border-slate-100">
+
+    <!-- ============== VIEW: PROFILE / ONBOARDING ============== -->
+    <section id="view-profile" class="view px-6 pt-10 pb-12 hidden">
+      <div class="flex items-center gap-2 mb-10">
+        <div class="w-8 h-8 rounded-xl bg-emerald-500 flex items-center justify-center text-white font-bold">S</div>
+        <span class="font-semibold tracking-tight">SafeBite</span>
+      </div>
+
+      <h1 class="text-3xl font-bold tracking-tight leading-tight">Eat Thai street food,<br/>safely.</h1>
+      <p class="text-slate-500 mt-3 text-[15px] leading-relaxed">Tell us what to watch out for. We'll flag risky dishes and help you ask vendors in Thai.</p>
+
+      <div class="mt-8">
+        <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500">Allergens</h2>
+        <p class="text-xs text-slate-400 mt-1">Tap any that apply</p>
+        <div id="allergen-chips" class="flex flex-wrap gap-2 mt-4"></div>
+      </div>
+
+      <div class="mt-8">
+        <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500">Diet</h2>
+        <p class="text-xs text-slate-400 mt-1">Optional</p>
+        <div id="diet-chips" class="flex flex-wrap gap-2 mt-4"></div>
+      </div>
+
+      <button id="profile-continue" class="press mt-10 w-full bg-slate-900 text-white font-semibold py-4 rounded-2xl hover:bg-slate-800 transition">
+        Continue
+      </button>
+
+      <p class="text-[11px] text-slate-400 leading-relaxed mt-6 text-center">
+        kindee gives risk <em>estimates</em>, not medical advice.<br/>Always confirm ingredients with the vendor.
+      </p>
+    </section>
+
+    <!-- ============== VIEW: HOME / SCAN HUB ============== -->
+    <section id="view-home" class="view px-6 pt-8 pb-12 hidden">
+      <header class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-emerald-500 flex items-center justify-center text-white font-bold">k</div>
+          <span class="font-semibold tracking-tight lowercase">kindee</span>
+        </div>
+        <button onclick="show('profile')" class="press text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1.5 px-3 py-2 rounded-full border border-slate-200">
+          <span id="profile-summary">Edit profile</span>
+        </button>
+      </header>
+
+      <h1 class="mt-10 text-3xl font-bold tracking-tight leading-tight">What are you<br/>eating?</h1>
+      <p class="text-slate-500 mt-3 text-[15px]">Pick the easiest way to identify your dish.</p>
+
+      <div class="mt-8 space-y-3">
+        <button onclick="mockPhotoScan()" class="press w-full text-left bg-white border border-slate-200 rounded-2xl p-5 flex items-center gap-4 hover:border-slate-900 transition">
+          <div class="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center text-2xl">📷</div>
+          <div class="flex-1">
+            <div class="font-semibold">Scan a photo</div>
+            <div class="text-xs text-slate-500 mt-0.5">Point your camera at the dish</div>
+          </div>
+          <span class="text-slate-300">›</span>
+        </button>
+
+        <button onclick="mockVoice()" class="press w-full text-left bg-white border border-slate-200 rounded-2xl p-5 flex items-center gap-4 hover:border-slate-900 transition">
+          <div class="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center text-2xl">🎤</div>
+          <div class="flex-1">
+            <div class="font-semibold">Say the dish name</div>
+            <div class="text-xs text-slate-500 mt-0.5">"Pad Thai", "Tom Yum"…</div>
+          </div>
+          <span class="text-slate-300">›</span>
+        </button>
+
+        <div class="bg-white border border-slate-200 rounded-2xl p-5">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center text-2xl">⌨️</div>
+            <div class="flex-1">
+              <div class="font-semibold">Type or pick</div>
+              <div class="text-xs text-slate-500 mt-0.5">Search popular street food</div>
+            </div>
+          </div>
+          <input id="search-input" type="text" placeholder="Search a dish…" class="mt-4 w-full bg-slate-50 border border-transparent focus:border-slate-300 focus:bg-white rounded-xl px-4 py-3 text-sm outline-none transition" />
+          <div id="dish-chips" class="flex flex-wrap gap-2 mt-3"></div>
+        </div>
+      </div>
+
+      <p class="text-[11px] text-slate-400 leading-relaxed mt-8 text-center">
+        Demo mode · Photo &amp; voice are simulated for this preview
+      </p>
+    </section>
+
+    <!-- ============== VIEW: RESULT ============== -->
+    <section id="view-result" class="view px-6 pt-6 pb-12 hidden">
+      <button onclick="show('home')" class="press text-sm text-slate-500 hover:text-slate-900 flex items-center gap-1">
+        <span>←</span> Back
+      </button>
+
+      <div class="mt-6 flex items-start gap-4">
+        <div id="result-emoji" class="text-6xl leading-none">🍜</div>
+        <div class="flex-1">
+          <h1 id="result-en" class="text-2xl font-bold tracking-tight leading-tight">Pad Thai</h1>
+          <p id="result-th" class="th text-slate-500 mt-1">ผัดไทย</p>
+        </div>
+      </div>
+
+      <!-- Risk badge -->
+      <div id="risk-card" class="mt-6 rounded-2xl p-5 border">
+        <div class="flex items-center gap-3">
+          <div id="risk-dot" class="w-3 h-3 rounded-full"></div>
+          <div class="text-xs font-semibold uppercase tracking-wider" id="risk-label">Low risk</div>
+        </div>
+        <h2 class="font-bold text-lg mt-3" id="risk-headline">Looks safe for your profile</h2>
+        <ul id="risk-reasons" class="mt-3 space-y-1.5 text-sm text-slate-700"></ul>
+      </div>
+
+      <!-- Likely ingredients -->
+      <div class="mt-8">
+        <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-500">Likely ingredients</h3>
+        <div id="ingredients-chips" class="flex flex-wrap gap-2 mt-3"></div>
+      </div>
+
+      <!-- Hidden risks -->
+      <div id="cross-section" class="mt-8 hidden">
+        <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-500">Hidden risks</h3>
+        <ul id="cross-list" class="mt-3 space-y-2 text-sm text-slate-700"></ul>
+      </div>
+
+      <!-- Safer alternatives -->
+      <div id="alts-section" class="mt-8 hidden">
+        <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-500">Safer alternatives</h3>
+        <div id="alts-list" class="grid grid-cols-2 gap-3 mt-3"></div>
+      </div>
+
+      <button id="open-phrase" class="press mt-10 w-full bg-slate-900 text-white font-semibold py-4 rounded-2xl hover:bg-slate-800 transition">
+        Show Thai phrase card
+      </button>
+
+      <p class="text-[11px] text-slate-400 leading-relaxed mt-6 text-center">
+        This is a risk estimate based on common recipes.<br/>Always confirm with the vendor.
+      </p>
+    </section>
+
+    <!-- ============== VIEW: PHRASE CARD ============== -->
+    <section id="view-phrase" class="view px-6 pt-6 pb-12 hidden">
+      <button onclick="show('result')" class="press text-sm text-slate-500 hover:text-slate-900 flex items-center gap-1">
+        <span>←</span> Back to result
+      </button>
+
+      <p class="mt-6 text-xs text-slate-500">Show this to the vendor</p>
+
+      <div class="mt-3 rounded-3xl bg-white border border-slate-200 shadow-sm p-7">
+        <div class="text-[11px] font-semibold uppercase tracking-wider text-emerald-600">kindee · Thai phrase</div>
+        <p id="phrase-thai" class="th text-3xl font-semibold leading-snug mt-4 text-slate-900"></p>
+        <div class="border-t border-slate-100 my-5"></div>
+        <p id="phrase-en" class="text-sm text-slate-500 leading-relaxed"></p>
+      </div>
+
+      <div class="mt-8">
+        <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-500">Vendor reply</h3>
+        <p class="text-xs text-slate-400 mt-1">Ask the vendor to tap one</p>
+        <div class="mt-4 grid grid-cols-1 gap-2.5">
+          <button onclick="vendorReply('yes')" class="press py-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 font-semibold flex items-center gap-3 px-5">
+            <span class="text-2xl">✅</span><span>ทำได้ <span class="text-xs font-normal opacity-70">/ Yes, can do</span></span>
+          </button>
+          <button onclick="vendorReply('maybe')" class="press py-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 font-semibold flex items-center gap-3 px-5">
+            <span class="text-2xl">⚠️</span><span>ทำได้ แต่อาจปนเปื้อน <span class="text-xs font-normal opacity-70">/ Yes, but cross-contact possible</span></span>
+          </button>
+          <button onclick="vendorReply('no')" class="press py-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 font-semibold flex items-center gap-3 px-5">
+            <span class="text-2xl">❌</span><span>ทำไม่ได้ <span class="text-xs font-normal opacity-70">/ Sorry, can't</span></span>
+          </button>
+        </div>
+      </div>
+
+      <div id="vendor-result" class="mt-6 hidden rounded-2xl p-5 border"></div>
+    </section>
+
+    <!-- ============== LISTENING OVERLAY (mock voice) ============== -->
+    <div id="listening" class="hidden fixed inset-0 bg-white/90 backdrop-blur z-50 flex items-center justify-center">
+      <div class="text-center">
+        <div class="mx-auto w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center text-3xl animate-pulse">🎤</div>
+        <p class="mt-5 font-semibold text-slate-900">Listening…</p>
+        <p class="text-xs text-slate-500 mt-1">Say a dish name</p>
+      </div>
+    </div>
+
+    <!-- hidden file input for mock photo -->
+    <input id="photo-input" type="file" accept="image/*" capture="environment" class="hidden" />
+  </div>
+
+  <script>
+    /* ===========================================================
+       Mock data
+       =========================================================== */
+    const ALLERGENS = [
+      { id: 'peanuts',  label: 'Peanuts',    emoji: '🥜' },
+      { id: 'tree_nuts',label: 'Tree nuts',  emoji: '🌰' },
+      { id: 'shellfish',label: 'Shellfish',  emoji: '🦐' },
+      { id: 'fish',     label: 'Fish',       emoji: '🐟' },
+      { id: 'egg',      label: 'Egg',        emoji: '🥚' },
+      { id: 'soy',      label: 'Soy',        emoji: '🫘' },
+      { id: 'milk',     label: 'Milk',       emoji: '🥛' },
+      { id: 'gluten',   label: 'Gluten',     emoji: '🌾' },
+      { id: 'sesame',   label: 'Sesame',     emoji: '⚪' },
+    ];
+
+    const DIETS = [
+      { id: 'vegan',       label: 'Vegan',        emoji: '🌱' },
+      { id: 'vegetarian',  label: 'Vegetarian',   emoji: '🥗' },
+      { id: 'halal',       label: 'Halal',        emoji: '☪️' },
+      { id: 'gluten_free', label: 'Gluten-free',  emoji: '🚫🌾' },
+    ];
+
+    // Pretty labels for ingredients (used to mark allergens on chips)
+    const INGREDIENT_ALLERGEN_MAP = {
+      'peanuts': 'peanuts', 'peanut sauce': 'peanuts',
+      'cashews': 'tree_nuts', 'almonds': 'tree_nuts',
+      'shrimp': 'shellfish', 'dried shrimp': 'shellfish', 'crab': 'shellfish', 'oyster sauce': 'shellfish',
+      'fish sauce': 'fish', 'fish': 'fish',
+      'egg': 'egg',
+      'soy sauce': 'soy', 'tofu': 'soy', 'soybean oil': 'soy',
+      'milk': 'milk', 'butter': 'milk', 'evaporated milk': 'milk',
+      'wheat noodles': 'gluten', 'soy sauce (wheat)': 'gluten',
+      'sesame': 'sesame', 'sesame oil': 'sesame',
+    };
+
+    const DISHES = {
+      pad_thai: {
+        en: 'Pad Thai', th: 'ผัดไทย', emoji: '🍜',
+        ingredients: ['rice noodles','egg','peanuts','bean sprouts','tofu','fish sauce','tamarind','dried shrimp','garlic chives','lime'],
+        allergens: ['peanuts','egg','shellfish','fish','soy'],
+        vegan: false, vegetarian: false, halal_default: false, gluten_free: true,
+        crossContact: ['Wok shared with shrimp & egg dishes','Crushed peanuts sprinkled at the end'],
+        saferAlts: ['mango_sticky_rice','khao_pad'],
+      },
+      som_tum: {
+        en: 'Som Tum (Papaya Salad)', th: 'ส้มตำ', emoji: '🥗',
+        ingredients: ['green papaya','peanuts','dried shrimp','fish sauce','palm sugar','lime','chili','tomato','garlic'],
+        allergens: ['peanuts','shellfish','fish'],
+        vegan: false, vegetarian: false, halal_default: false, gluten_free: true,
+        crossContact: ['Pestle & mortar shared across orders','Fermented crab (pu) often added by default in Thai-style'],
+        saferAlts: ['mango_sticky_rice'],
+      },
+      tom_yum: {
+        en: 'Tom Yum Goong', th: 'ต้มยำกุ้ง', emoji: '🍲',
+        ingredients: ['shrimp','lemongrass','galangal','kaffir lime','chili paste','fish sauce','mushroom','lime'],
+        allergens: ['shellfish','fish','soy'],
+        vegan: false, vegetarian: false, halal_default: true, gluten_free: true,
+        crossContact: ['Chili paste (nam prik pao) often contains dried shrimp'],
+        saferAlts: ['khao_pad'],
+      },
+      massaman: {
+        en: 'Massaman Curry', th: 'แกงมัสมั่น', emoji: '🍛',
+        ingredients: ['chicken','peanuts','potato','coconut milk','cinnamon','cardamom','tamarind','fish sauce'],
+        allergens: ['peanuts','fish'],
+        vegan: false, vegetarian: false, halal_default: true, gluten_free: true,
+        crossContact: ['Whole peanuts in the curry'],
+        saferAlts: ['khao_pad','mango_sticky_rice'],
+      },
+      pad_krapao: {
+        en: 'Pad Krapao (Basil Stir-fry)', th: 'ผัดกะเพรา', emoji: '🌶️',
+        ingredients: ['minced pork or chicken','holy basil','chili','garlic','oyster sauce','soy sauce','fish sauce','egg (on top)'],
+        allergens: ['shellfish','soy','fish','egg','gluten'],
+        vegan: false, vegetarian: false, halal_default: false, gluten_free: false,
+        crossContact: ['Egg fried in the same wok','Soy sauce typically contains wheat'],
+        saferAlts: ['khao_pad','mango_sticky_rice'],
+      },
+      mango_sticky_rice: {
+        en: 'Mango Sticky Rice', th: 'ข้าวเหนียวมะม่วง', emoji: '🥭',
+        ingredients: ['sticky rice','coconut milk','sugar','salt','mango','toasted mung beans (sometimes)'],
+        allergens: [],
+        vegan: true, vegetarian: true, halal_default: true, gluten_free: true,
+        crossContact: ['Toasted sesame sometimes sprinkled on top'],
+        saferAlts: [],
+      },
+      khao_pad: {
+        en: 'Khao Pad (Thai Fried Rice)', th: 'ข้าวผัด', emoji: '🍚',
+        ingredients: ['rice','egg','soy sauce','garlic','onion','tomato','chicken or shrimp','fish sauce','spring onion'],
+        allergens: ['egg','soy','fish','gluten'],
+        vegan: false, vegetarian: false, halal_default: false, gluten_free: false,
+        crossContact: ['Same wok used for shrimp & meat versions'],
+        saferAlts: ['mango_sticky_rice'],
+      },
+      satay: {
+        en: 'Chicken Satay', th: 'สะเต๊ะไก่', emoji: '🍢',
+        ingredients: ['chicken','turmeric','coconut milk','peanut sauce','soy sauce'],
+        allergens: ['peanuts','soy','gluten'],
+        vegan: false, vegetarian: false, halal_default: true, gluten_free: false,
+        crossContact: ['Peanut sauce served on the side','Grill shared with pork skewers (not halal-safe)'],
+        saferAlts: ['khao_pad','mango_sticky_rice'],
+      },
+    };
+
+    /* ===========================================================
+       State + persistence
+       =========================================================== */
+    const STORAGE_KEY = 'safebite.profile';
+    let profile = loadProfile();
+
+    function loadProfile() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) return JSON.parse(raw);
+      } catch (e) {}
+      return { allergens: [], diets: [] };
+    }
+    function saveProfile() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
+    }
+    function toggle(arr, id) {
+      const i = arr.indexOf(id);
+      if (i >= 0) arr.splice(i, 1); else arr.push(id);
+    }
+
+    /* ===========================================================
+       Router
+       =========================================================== */
+    const VIEWS = ['profile', 'home', 'result', 'phrase'];
+    function show(name) {
+      VIEWS.forEach(v => {
+        const el = document.getElementById('view-' + v);
+        if (!el) return;
+        el.classList.toggle('hidden', v !== name);
+      });
+      window.scrollTo(0, 0);
+      if (name === 'home') renderProfileSummary();
+    }
+
+    /* ===========================================================
+       Profile view
+       =========================================================== */
+    function renderChips(containerId, items, selectedArr, onChange) {
+      const c = document.getElementById(containerId);
+      c.innerHTML = '';
+      items.forEach(item => {
+        const selected = selectedArr.includes(item.id);
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'press inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full border text-sm font-medium transition ' +
+          (selected
+            ? 'bg-slate-900 text-white border-slate-900'
+            : 'bg-white text-slate-700 border-slate-200 hover:border-slate-400');
+        btn.innerHTML = `<span>${item.emoji}</span><span>${item.label}</span>`;
+        btn.onclick = () => {
+          toggle(selectedArr, item.id);
+          saveProfile();
+          onChange();
+        };
+        c.appendChild(btn);
+      });
+    }
+
+    function renderProfileView() {
+      renderChips('allergen-chips', ALLERGENS, profile.allergens, renderProfileView);
+      renderChips('diet-chips', DIETS, profile.diets, renderProfileView);
+    }
+
+    function renderProfileSummary() {
+      const total = profile.allergens.length + profile.diets.length;
+      const el = document.getElementById('profile-summary');
+      if (total === 0) { el.textContent = 'Set profile'; return; }
+      const parts = [];
+      if (profile.allergens.length) parts.push(profile.allergens.length + ' allergen' + (profile.allergens.length>1?'s':''));
+      if (profile.diets.length) parts.push(profile.diets.map(id => DIETS.find(d=>d.id===id)?.label).filter(Boolean).join(', '));
+      el.textContent = parts.join(' · ');
+    }
+
+    /* ===========================================================
+       Home view — dish chips + search + mock scan/voice
+       =========================================================== */
+    function renderDishChips(filter) {
+      const c = document.getElementById('dish-chips');
+      c.innerHTML = '';
+      const q = (filter || '').toLowerCase().trim();
+      Object.entries(DISHES).forEach(([id, d]) => {
+        if (q && !d.en.toLowerCase().includes(q) && !d.th.includes(q)) return;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'press inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-200 bg-white text-sm hover:border-slate-900 transition';
+        btn.innerHTML = `<span>${d.emoji}</span><span>${d.en.replace(/\s*\(.*\)/, '')}</span>`;
+        btn.onclick = () => openResult(id);
+        c.appendChild(btn);
+      });
+      if (!c.children.length) {
+        c.innerHTML = '<p class="text-xs text-slate-400 px-1">No matches — try another name</p>';
+      }
+    }
+
+    function mockPhotoScan() {
+      // open file picker for show, then "recognize" a random dish
+      const input = document.getElementById('photo-input');
+      input.value = '';
+      input.onchange = () => {
+        showListeningOverlay('🔍', 'Identifying…', 'Analyzing the photo');
+        setTimeout(() => { hideListeningOverlay(); openRandomResult(); }, 1400);
+      };
+      // also support cancel (no file): still demo a result after short delay
+      input.click();
+      // fallback: if user dismisses picker (we can't detect cleanly), just show result after a moment
+      // — leave this to the onchange path so demo always feels intentional
+    }
+
+    function mockVoice() {
+      showListeningOverlay('🎤', 'Listening…', 'Say a dish name');
+      setTimeout(() => { hideListeningOverlay(); openRandomResult(); }, 1500);
+    }
+
+    function showListeningOverlay(emoji, title, sub) {
+      const ov = document.getElementById('listening');
+      ov.querySelector('div > div').textContent = emoji;
+      ov.querySelectorAll('p')[0].textContent = title;
+      ov.querySelectorAll('p')[1].textContent = sub;
+      ov.classList.remove('hidden');
+    }
+    function hideListeningOverlay() {
+      document.getElementById('listening').classList.add('hidden');
+    }
+
+    function openRandomResult() {
+      const ids = Object.keys(DISHES);
+      openResult(ids[Math.floor(Math.random() * ids.length)]);
+    }
+
+    /* ===========================================================
+       Result view + risk scoring
+       =========================================================== */
+    let currentDishId = null;
+
+    function ingredientAllergen(ing) {
+      const key = ing.toLowerCase();
+      // exact match first
+      if (INGREDIENT_ALLERGEN_MAP[key]) return INGREDIENT_ALLERGEN_MAP[key];
+      // substring fallback
+      for (const k in INGREDIENT_ALLERGEN_MAP) {
+        if (key.includes(k)) return INGREDIENT_ALLERGEN_MAP[k];
+      }
+      return null;
+    }
+
+    function scoreRisk(dish) {
+      const reasons = [];
+      let level = 'low'; // low | medium | high | unknown
+
+      // allergen direct hits
+      const userAll = profile.allergens;
+      const matchedAll = dish.allergens.filter(a => userAll.includes(a));
+      matchedAll.forEach(a => {
+        const meta = ALLERGENS.find(x => x.id === a);
+        reasons.push({ kind: 'high', text: `Commonly contains <strong>${meta?.label || a}</strong> (your allergy)` });
+      });
+      if (matchedAll.length) level = 'high';
+
+      // diet conflicts
+      profile.diets.forEach(d => {
+        if (d === 'vegan' && !dish.vegan) {
+          reasons.push({ kind: 'high', text: 'Not vegan — likely fish sauce, oyster sauce, egg, or meat' });
+          level = 'high';
+        } else if (d === 'vegetarian' && !dish.vegetarian) {
+          reasons.push({ kind: 'high', text: 'Not vegetarian — contains meat, seafood, or fish sauce' });
+          level = 'high';
+        } else if (d === 'halal' && !dish.halal_default) {
+          reasons.push({ kind: 'medium', text: 'Not halal by default — may use pork, lard, or shared grill' });
+          if (level === 'low') level = 'medium';
+        } else if (d === 'gluten_free' && !dish.gluten_free) {
+          reasons.push({ kind: 'high', text: 'Not gluten-free — soy sauce / oyster sauce typically contain wheat' });
+          if (level !== 'high') level = 'high';
+        }
+      });
+
+      // cross-contact bumps
+      if (dish.crossContact?.length && userAll.length && level === 'low') {
+        level = 'medium';
+        reasons.push({ kind: 'medium', text: 'Possible cross-contact in the kitchen — see hidden risks' });
+      }
+
+      // happy path
+      if (!reasons.length) {
+        reasons.push({ kind: 'low', text: 'No matches against your profile in the typical recipe' });
+      }
+
+      return { level, reasons };
+    }
+
+    const RISK_STYLE = {
+      low:    { bg:'bg-emerald-50', border:'border-emerald-200', dot:'bg-emerald-500', text:'text-emerald-700', label:'Low risk',     headline:'Looks safe for your profile' },
+      medium: { bg:'bg-amber-50',   border:'border-amber-200',   dot:'bg-amber-500',   text:'text-amber-700',   label:'Medium risk',  headline:'Worth asking the vendor' },
+      high:   { bg:'bg-rose-50',    border:'border-rose-200',    dot:'bg-rose-500',    text:'text-rose-700',    label:'High risk',    headline:"Don't order without confirming" },
+      unknown:{ bg:'bg-slate-50',   border:'border-slate-200',   dot:'bg-slate-400',   text:'text-slate-600',   label:'Unknown',      headline:'Not enough info — ask first' },
+    };
+
+    function openResult(id) {
+      currentDishId = id;
+      const dish = DISHES[id];
+      if (!dish) return;
+
+      document.getElementById('result-emoji').textContent = dish.emoji;
+      document.getElementById('result-en').textContent = dish.en;
+      document.getElementById('result-th').textContent = dish.th;
+
+      const { level, reasons } = scoreRisk(dish);
+      const style = RISK_STYLE[level];
+      const card = document.getElementById('risk-card');
+      card.className = `mt-6 rounded-2xl p-5 border ${style.bg} ${style.border}`;
+      document.getElementById('risk-dot').className = `w-3 h-3 rounded-full ${style.dot}`;
+      const lbl = document.getElementById('risk-label');
+      lbl.className = `text-xs font-semibold uppercase tracking-wider ${style.text}`;
+      lbl.textContent = style.label;
+      document.getElementById('risk-headline').textContent = style.headline;
+
+      const ul = document.getElementById('risk-reasons');
+      ul.innerHTML = '';
+      reasons.forEach(r => {
+        const li = document.createElement('li');
+        li.className = 'flex gap-2';
+        const icon = r.kind === 'high' ? '🚫' : r.kind === 'medium' ? '⚠️' : '✅';
+        li.innerHTML = `<span class="shrink-0">${icon}</span><span>${r.text}</span>`;
+        ul.appendChild(li);
+      });
+
+      // ingredients
+      const ic = document.getElementById('ingredients-chips');
+      ic.innerHTML = '';
+      dish.ingredients.forEach(ing => {
+        const al = ingredientAllergen(ing);
+        const flagged = al && profile.allergens.includes(al);
+        const span = document.createElement('span');
+        span.className = 'inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium border ' +
+          (flagged ? 'bg-rose-50 text-rose-800 border-rose-200' : 'bg-slate-50 text-slate-700 border-slate-200');
+        span.innerHTML = (flagged ? '⚠️ ' : '') + ing;
+        ic.appendChild(span);
+      });
+
+      // cross contact
+      const crossSec = document.getElementById('cross-section');
+      const crossUl = document.getElementById('cross-list');
+      if (dish.crossContact?.length) {
+        crossSec.classList.remove('hidden');
+        crossUl.innerHTML = '';
+        dish.crossContact.forEach(c => {
+          const li = document.createElement('li');
+          li.className = 'flex gap-2';
+          li.innerHTML = `<span class="shrink-0">⚠️</span><span>${c}</span>`;
+          crossUl.appendChild(li);
+        });
+      } else {
+        crossSec.classList.add('hidden');
+      }
+
+      // alternatives — only show ones that score better than current
+      const altsSec = document.getElementById('alts-section');
+      const altsList = document.getElementById('alts-list');
+      altsList.innerHTML = '';
+      const currentLevel = level;
+      const order = { low:0, medium:1, high:2, unknown:3 };
+      let count = 0;
+      (dish.saferAlts || []).forEach(altId => {
+        const alt = DISHES[altId];
+        if (!alt) return;
+        const altLevel = scoreRisk(alt).level;
+        if (order[altLevel] >= order[currentLevel]) return; // not actually safer
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'press text-left bg-white border border-slate-200 rounded-2xl p-4 hover:border-slate-900 transition';
+        card.innerHTML = `
+          <div class="text-3xl">${alt.emoji}</div>
+          <div class="font-semibold mt-2 text-sm leading-tight">${alt.en.replace(/\s*\(.*\)/,'')}</div>
+          <div class="th text-xs text-slate-500 mt-0.5">${alt.th}</div>
+          <div class="mt-2 text-[10px] font-semibold uppercase tracking-wider ${RISK_STYLE[altLevel].text}">${RISK_STYLE[altLevel].label}</div>
+        `;
+        card.onclick = () => openResult(altId);
+        altsList.appendChild(card);
+        count++;
+      });
+      altsSec.classList.toggle('hidden', count === 0);
+
+      show('result');
+    }
+
+    /* ===========================================================
+       Phrase card
+       =========================================================== */
+    function buildPhrase(dish) {
+      const allergenTH = {
+        peanuts: 'ถั่วลิสง', tree_nuts: 'ถั่วเปลือกแข็ง', shellfish: 'กุ้ง/หอย/ปู',
+        fish: 'ปลา/น้ำปลา', egg: 'ไข่', soy: 'ถั่วเหลือง/ซีอิ๊ว',
+        milk: 'นม', gluten: 'แป้งสาลี/ซีอิ๊ว', sesame: 'งา',
+      };
+      const allergenEN = {
+        peanuts: 'peanuts', tree_nuts: 'tree nuts', shellfish: 'shellfish (shrimp, crab)',
+        fish: 'fish or fish sauce', egg: 'egg', soy: 'soy or soy sauce',
+        milk: 'milk', gluten: 'wheat / gluten', sesame: 'sesame',
+      };
+
+      const lines_th = [];
+      const lines_en = [];
+
+      lines_th.push(`สวัสดีค่ะ/ครับ ขอสั่ง${dish.th} แต่...`);
+      lines_en.push(`Hello — I'd like to order ${dish.en}, but…`);
+
+      if (profile.allergens.length) {
+        const th = profile.allergens.map(a => allergenTH[a]).filter(Boolean).join(', ');
+        const en = profile.allergens.map(a => allergenEN[a]).filter(Boolean).join(', ');
+        lines_th.push(`ฉันแพ้ ${th} (แพ้รุนแรง)`);
+        lines_en.push(`I'm allergic to ${en} (severe).`);
+        lines_th.push(`ขอไม่ใส่ และขออย่าใช้กระทะ/ครก/น้ำมันร่วมกับเมนูที่มีส่วนผสมเหล่านี้ได้ไหมคะ/ครับ?`);
+        lines_en.push(`Please don't add any, and don't use the same wok / mortar / oil as dishes with these.`);
+      }
+
+      if (profile.diets.includes('vegan')) {
+        lines_th.push(`ขอแบบมังสวิรัติ (vegan) — ไม่ใส่เนื้อสัตว์ ไข่ นม น้ำปลา น้ำมันหอย กะปิ และกุ้งแห้งค่ะ/ครับ`);
+        lines_en.push(`Please make it vegan — no meat, egg, dairy, fish sauce, oyster sauce, shrimp paste, or dried shrimp.`);
+      } else if (profile.diets.includes('vegetarian')) {
+        lines_th.push(`ขอแบบมังสวิรัติ — ไม่ใส่เนื้อสัตว์ น้ำปลา น้ำมันหอย และกุ้งแห้งค่ะ/ครับ`);
+        lines_en.push(`Please make it vegetarian — no meat, fish sauce, oyster sauce, or dried shrimp.`);
+      }
+      if (profile.diets.includes('halal')) {
+        lines_th.push(`ขอแบบฮาลาล — ไม่มีหมู ไม่มีน้ำมันหมู และไม่ใช้กระทะ/เตาร่วมกับหมูค่ะ/ครับ`);
+        lines_en.push(`Please make it halal — no pork, no lard, and not cooked on equipment shared with pork.`);
+      }
+      if (profile.diets.includes('gluten_free')) {
+        lines_th.push(`ขอแบบไม่มีแป้งสาลี — ไม่ใส่ซีอิ๊ว น้ำมันหอย หรือซอสที่มีแป้งสาลีค่ะ/ครับ`);
+        lines_en.push(`Please make it gluten-free — no soy sauce, oyster sauce, or wheat-based sauces.`);
+      }
+
+      if (profile.allergens.length === 0 && profile.diets.length === 0) {
+        lines_th.push(`มีส่วนผสมอะไรบ้างคะ/ครับ?`);
+        lines_en.push(`Could you tell me what's in this dish?`);
+      }
+
+      lines_th.push(`ขอบคุณมากค่ะ/ครับ 🙏`);
+      lines_en.push(`Thank you so much 🙏`);
+
+      return { th: lines_th.join('\n'), en: lines_en.join(' ') };
+    }
+
+    function openPhrase() {
+      const dish = DISHES[currentDishId];
+      if (!dish) return;
+      const { th, en } = buildPhrase(dish);
+      document.getElementById('phrase-thai').textContent = th;
+      document.getElementById('phrase-en').textContent = en;
+      document.getElementById('vendor-result').classList.add('hidden');
+      show('phrase');
+    }
+
+    function vendorReply(kind) {
+      const r = document.getElementById('vendor-result');
+      const map = {
+        yes:   { cls:'bg-emerald-50 border-emerald-200 text-emerald-900', icon:'✅', title:'Vendor said: Yes, can do',         body:'Great — you can order this dish as requested. Still trust your nose: if anything looks off, ask again.' },
+        maybe: { cls:'bg-amber-50 border-amber-200 text-amber-900',       icon:'⚠️', title:'Vendor said: Yes, but cross-contact possible', body:'Shared cookware may carry traces of allergens. If your allergy is severe, consider one of the safer alternatives instead.' },
+        no:    { cls:'bg-rose-50 border-rose-200 text-rose-900',          icon:'❌', title:"Vendor said: Sorry, can't",          body:'Try a safer alternative on the previous screen, or move to another stall.' },
+      };
+      const m = map[kind];
+      r.className = `mt-6 rounded-2xl p-5 border ${m.cls}`;
+      r.innerHTML = `<div class="flex items-start gap-3"><span class="text-2xl">${m.icon}</span><div><div class="font-semibold">${m.title}</div><p class="text-sm opacity-90 mt-1">${m.body}</p></div></div>`;
+      r.classList.remove('hidden');
+    }
+
+    /* ===========================================================
+       Boot
+       =========================================================== */
+    document.getElementById('profile-continue').addEventListener('click', () => show('home'));
+    document.getElementById('open-phrase').addEventListener('click', openPhrase);
+    document.getElementById('search-input').addEventListener('input', (e) => renderDishChips(e.target.value));
+
+    renderProfileView();
+    renderDishChips('');
+    renderProfileSummary();
+
+    // First-run: profile if empty, otherwise home
+    const hasProfile = profile.allergens.length || profile.diets.length;
+    show(hasProfile ? 'home' : 'profile');
+  </script>
+</body>
+</html>

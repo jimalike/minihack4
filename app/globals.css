@@ -1,0 +1,89 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  background: #f7f9fb;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  background: #f7f9fb;
+  color: #111827;
+  font-family:
+    Inter,
+    "Plus Jakarta Sans",
+    "Noto Sans Thai",
+    "IBM Plex Sans Thai",
+    ui-sans-serif,
+    system-ui,
+    sans-serif;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.high-contrast {
+  background: #fff;
+  color: #111;
+}
+
+.high-contrast body,
+.high-contrast main {
+  background: #fff !important;
+  color: #111 !important;
+}
+
+.high-contrast .contrast-panel {
+  border-color: #111 !important;
+  box-shadow: none !important;
+}
+
+.brand-mark {
+  position: relative;
+  width: 34px;
+  height: 34px;
+}
+
+.brand-mark::before,
+.brand-mark::after,
+.brand-mark span {
+  position: absolute;
+  left: 5px;
+  width: 24px;
+  height: 14px;
+  content: "";
+  border: 4px solid #06bfae;
+  border-top: 0;
+  transform: rotate(30deg) skewX(-30deg);
+}
+
+.brand-mark::before {
+  top: 0;
+}
+
+.brand-mark span {
+  top: 8px;
+}
+
+.brand-mark::after {
+  top: 16px;
+}
+
+.safe-area-bottom {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
