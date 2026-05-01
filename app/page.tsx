@@ -122,6 +122,7 @@ type MenuCautionRow = {
   cautionNotes: string[];
   askVendor: string;
   matchedDishId?: string;
+  proteinOptions?: string[];
 };
 
 const STORAGE_KEY = "thai-safe-bite-profile";
@@ -136,8 +137,11 @@ const languageNames: Record<Lang, string> = {
   AR: "العربية",
 };
 
-const copy: Record<Lang, Record<string, string>> = {
+// Master list of i18n keys. EN is the source of truth for shape; other languages
+// fall back to EN via the `t()` helper if a key is missing.
+const copy = {
   EN: {
+    // legacy keys (already used by ResultScreen / PhraseScreen)
     intro: "Let's check together before you eat.",
     disclaimer: "This is not medical advice. Always confirm with the vendor.",
     riskEstimate: "Risk estimate",
@@ -148,6 +152,77 @@ const copy: Record<Lang, Record<string, string>> = {
     safer: "Safer alternatives",
     phrase: "Thai phrase card",
     vendor: "Vendor reply mode",
+    // caution table
+    cautionTable: "Caution table",
+    menuScanResults: "Menu scan results",
+    sortedByRisk: "Sorted by risk for your profile. Tap a row's phrase to ask the vendor before ordering.",
+    colMenuItem: "Menu item",
+    colPossibleCautions: "Possible cautions",
+    colRisk: "Risk",
+    colAskVendor: "Ask vendor",
+    colAction: "Action",
+    review: "Review",
+    askOnly: "Ask only",
+    chooseProtein: "Choose {safe}. Avoid {avoid}.",
+    allProteinsConflict: "All listed proteins ({avoid}) conflict with your profile — ask for an off-menu option.",
+    ocrFooterNote: "Menu OCR cannot prove ingredients or cross-contact. Use this table to ask better questions, then confirm with the vendor.",
+    // scan UI
+    menuScannerEyebrow: "Menu scanner",
+    menuScannerTitle: "Scan Thai menus, then ask better questions.",
+    menuScannerSub: "Your profile is applied automatically. We estimate risk, then help you confirm with the vendor.",
+    uploadMenuPhoto: "Upload a menu photo",
+    uploadDescription: "Pick a photo of the menu board and we'll turn it into a caution table you can act on.",
+    uploadMenu: "Upload menu",
+    removeImage: "Remove image",
+    scanMenu: "Scan menu",
+    scanning: "Scanning menu…",
+    useSampleMenu: "Use sample Thai menu",
+    searchPlaceholder: "Optional menu hint, e.g. curry, fried rice",
+    noMenuDetected: "No menu items detected. Try a clearer photo of the menu board.",
+    scanFailed: "Scan failed",
+    cannotReachService: "Could not reach the scan service.",
+    pleaseChooseImage: "Please choose an image file (JPG, PNG, HEIC).",
+    couldNotReadImage: "Could not read this image. Try another one.",
+    tryAgain: "Try again.",
+    demoOcr: "Demo OCR",
+    // mode tabs
+    modeMenu: "Menu",
+    modeVoice: "Voice",
+    modeType: "Type",
+    // profile (api card)
+    apiProfileEyebrow: "Your profile",
+    foodNeedsApplied: "Food needs applied",
+    profileLoading: "Loading",
+    profileApi: "API",
+    profileLocal: "Local",
+    profileFallback: "Fallback",
+    profileDemo: "Demo",
+    allergensHeader: "Allergens",
+    dietsHeader: "Diets",
+    noProfileSelected: "No allergens or diets selected yet.",
+    // result screen
+    backToCheckAnother: "Back to check another dish",
+    showThisToVendor: "Show this to the vendor",
+    romanizedMeaning: "Romanized meaning",
+    playAudio: "Play polite Thai audio",
+    yourProfileTitle: "What this phrase checks",
+    askThenDecide: "Ask, then decide",
+    crossContactNote: "We estimate possible ingredients from common recipes. Street food varies by vendor, and cross-contact can happen with mortars, woks, oil, spoons, and cutting boards.",
+    // misc
+    offlinePopularDishes: "Offline popular dishes",
+    confirmWithVendor: "Always confirm with the vendor.",
+    // result screen extras
+    possibleMatch: "Possible match with your profile",
+    noOfflineCommonIngredients: "No common hidden animal or major allergen ingredient in our offline dish data.",
+    openPhraseCard: "Open Thai phrase card",
+    playThaiAudio: "Play Thai audio",
+    showVendor: "Show vendor",
+    tapToFlip: "Tap to flip question",
+    lowerRisk: "Lower risk",
+    phrasePreview: "Phrase preview",
+    vendorContains: "Contains",
+    vendorNo: "No",
+    vendorNotSure: "Not sure",
   },
   TH: {
     intro: "มาช่วยกันเช็กก่อนทานนะคะ",
@@ -160,6 +235,70 @@ const copy: Record<Lang, Record<string, string>> = {
     safer: "ตัวเลือกที่เสี่ยงน้อยกว่า",
     phrase: "การ์ดประโยคภาษาไทย",
     vendor: "โหมดให้ร้านค้าตอบ",
+    cautionTable: "ตารางข้อควรระวัง",
+    menuScanResults: "ผลสแกนเมนู",
+    sortedByRisk: "เรียงตามระดับความเสี่ยงของโปรไฟล์คุณ แตะประโยคในแถวเพื่อถามแม่ค้าก่อนสั่ง",
+    colMenuItem: "เมนู",
+    colPossibleCautions: "ข้อควรระวัง",
+    colRisk: "ความเสี่ยง",
+    colAskVendor: "ถามแม่ค้า",
+    colAction: "การจัดการ",
+    review: "ดูรายละเอียด",
+    askOnly: "ถามเท่านั้น",
+    chooseProtein: "เลือก {safe} หลีกเลี่ยง {avoid}",
+    allProteinsConflict: "เนื้อสัตว์ที่มีให้ ({avoid}) ขัดกับโปรไฟล์ทั้งหมด — ลองขอเมนูพิเศษนอกเมนู",
+    ocrFooterNote: "การ OCR เมนูไม่สามารถยืนยันส่วนผสมหรือการปนเปื้อนข้ามได้ ใช้ตารางนี้เพื่อถามคำถามที่ดีขึ้น แล้วยืนยันกับแม่ค้าอีกครั้ง",
+    menuScannerEyebrow: "สแกนเมนู",
+    menuScannerTitle: "สแกนเมนูไทย แล้วถามให้ตรงประเด็น",
+    menuScannerSub: "ระบบจะนำโปรไฟล์ของคุณมาคำนวณให้อัตโนมัติ แล้วช่วยคุณยืนยันกับแม่ค้า",
+    uploadMenuPhoto: "อัปโหลดรูปเมนู",
+    uploadDescription: "เลือกรูปป้ายเมนู เราจะแปลงเป็นตารางคำเตือนให้ดู",
+    uploadMenu: "อัปโหลดเมนู",
+    removeImage: "ลบรูป",
+    scanMenu: "สแกนเมนู",
+    scanning: "กำลังสแกน…",
+    useSampleMenu: "ใช้เมนูไทยตัวอย่าง",
+    searchPlaceholder: "พิมพ์ชื่อเมนู เช่น แกง ข้าวผัด",
+    noMenuDetected: "ไม่พบรายการเมนู ลองถ่ายรูปป้ายเมนูให้ชัดขึ้น",
+    scanFailed: "สแกนไม่สำเร็จ",
+    cannotReachService: "ติดต่อบริการสแกนไม่ได้",
+    pleaseChooseImage: "กรุณาเลือกไฟล์รูป (JPG, PNG, HEIC)",
+    couldNotReadImage: "อ่านรูปนี้ไม่ได้ ลองรูปอื่นนะคะ",
+    tryAgain: "ลองอีกครั้ง",
+    demoOcr: "OCR ตัวอย่าง",
+    modeMenu: "เมนู",
+    modeVoice: "เสียง",
+    modeType: "พิมพ์",
+    apiProfileEyebrow: "โปรไฟล์ของคุณ",
+    foodNeedsApplied: "นำข้อจำกัดอาหารมาใช้แล้ว",
+    profileLoading: "กำลังโหลด",
+    profileApi: "API",
+    profileLocal: "เครื่อง",
+    profileFallback: "สำรอง",
+    profileDemo: "เดโม่",
+    allergensHeader: "อาหารที่แพ้",
+    dietsHeader: "ข้อจำกัดอาหาร",
+    noProfileSelected: "ยังไม่ได้เลือกอาหารที่แพ้หรือข้อจำกัด",
+    backToCheckAnother: "กลับไปเช็กเมนูอื่น",
+    showThisToVendor: "ยื่นให้แม่ค้าดู",
+    romanizedMeaning: "คำแปลภาษาไทย",
+    playAudio: "เล่นเสียงประโยคภาษาไทย",
+    yourProfileTitle: "ประโยคนี้ตรวจอะไรให้บ้าง",
+    askThenDecide: "ถามก่อน แล้วค่อยตัดสินใจ",
+    crossContactNote: "เราประเมินส่วนผสมจากสูตรอาหารที่พบบ่อย ร้าน street food แต่ละเจ้าใช้สูตรต่างกัน และอาจมีการปนเปื้อนผ่านครก กระทะ น้ำมัน ช้อน หรือเขียง",
+    offlinePopularDishes: "เมนูยอดฮิต (ออฟไลน์)",
+    confirmWithVendor: "ยืนยันกับแม่ค้าทุกครั้ง",
+    possibleMatch: "อาจตรงกับโปรไฟล์ของคุณ",
+    noOfflineCommonIngredients: "ไม่มีส่วนผสมแฝง/อาหารที่แพ้ หลักในฐานข้อมูลออฟไลน์",
+    openPhraseCard: "เปิดการ์ดประโยคไทย",
+    playThaiAudio: "เล่นเสียงภาษาไทย",
+    showVendor: "ส่งให้ร้านดู",
+    tapToFlip: "แตะเพื่อเปลี่ยนคำถาม",
+    lowerRisk: "เสี่ยงน้อยกว่า",
+    phrasePreview: "ตัวอย่างประโยค",
+    vendorContains: "ใส่",
+    vendorNo: "ไม่ใส่",
+    vendorNotSure: "ไม่แน่ใจ",
   },
   JP: {
     intro: "食べる前に一緒に確認しましょう。",
@@ -172,6 +311,70 @@ const copy: Record<Lang, Record<string, string>> = {
     safer: "より安全な代替案",
     phrase: "タイ語フレーズカード",
     vendor: "店員返信モード",
+    cautionTable: "注意点一覧",
+    menuScanResults: "メニュースキャン結果",
+    sortedByRisk: "あなたのプロフィールに合わせてリスク順に並べました。注文前に各行のフレーズを店員に見せて確認してください。",
+    colMenuItem: "メニュー",
+    colPossibleCautions: "注意点",
+    colRisk: "リスク",
+    colAskVendor: "店員に聞く",
+    colAction: "操作",
+    review: "詳細",
+    askOnly: "確認のみ",
+    chooseProtein: "{safe} を選んでください。{avoid} は避けてください。",
+    allProteinsConflict: "表示されているたんぱく源 ({avoid}) はすべてプロフィールと合いません — メニューにない選択肢を尋ねてみてください。",
+    ocrFooterNote: "メニューOCRでは材料や交差接触を保証できません。この表を使って良い質問をし、店員に必ず確認してください。",
+    menuScannerEyebrow: "メニュースキャナー",
+    menuScannerTitle: "タイ料理メニューをスキャンして、上手に質問しましょう。",
+    menuScannerSub: "あなたのプロフィールが自動で適用されます。リスクを推定し、店員への確認をお手伝いします。",
+    uploadMenuPhoto: "メニュー写真をアップロード",
+    uploadDescription: "メニュー看板の写真を選んでください。注意点一覧に変換します。",
+    uploadMenu: "メニューをアップロード",
+    removeImage: "写真を削除",
+    scanMenu: "メニューをスキャン",
+    scanning: "スキャン中…",
+    useSampleMenu: "サンプルメニューを使う",
+    searchPlaceholder: "メニューのヒント (例: カレー、チャーハン)",
+    noMenuDetected: "メニュー項目が見つかりません。看板をはっきりと撮り直してください。",
+    scanFailed: "スキャンに失敗しました",
+    cannotReachService: "スキャンサービスに接続できません。",
+    pleaseChooseImage: "画像ファイルを選んでください (JPG、PNG、HEIC)。",
+    couldNotReadImage: "この画像を読み取れませんでした。別の画像を試してください。",
+    tryAgain: "もう一度お試しください。",
+    demoOcr: "デモOCR",
+    modeMenu: "メニュー",
+    modeVoice: "音声",
+    modeType: "入力",
+    apiProfileEyebrow: "あなたのプロフィール",
+    foodNeedsApplied: "食事制限を適用済み",
+    profileLoading: "読み込み中",
+    profileApi: "API",
+    profileLocal: "ローカル",
+    profileFallback: "フォールバック",
+    profileDemo: "デモ",
+    allergensHeader: "アレルギー",
+    dietsHeader: "食事制限",
+    noProfileSelected: "アレルギーや食事制限がまだ選択されていません。",
+    backToCheckAnother: "他のメニューを確認する",
+    showThisToVendor: "店員に見せてください",
+    romanizedMeaning: "ローマ字の意味",
+    playAudio: "丁寧なタイ語を再生",
+    yourProfileTitle: "このフレーズで確認する内容",
+    askThenDecide: "聞いてから決める",
+    crossContactNote: "一般的なレシピから材料を推定しています。屋台はお店ごとにレシピが違い、すり鉢、中華鍋、油、スプーン、まな板を介して交差接触が起こることがあります。",
+    offlinePopularDishes: "人気メニュー (オフライン)",
+    confirmWithVendor: "必ず店員に確認してください。",
+    possibleMatch: "あなたのプロフィールに該当する可能性",
+    noOfflineCommonIngredients: "オフラインデータには主要なアレルゲン/隠れ材料の情報がありません。",
+    openPhraseCard: "タイ語フレーズカードを開く",
+    playThaiAudio: "タイ語音声を再生",
+    showVendor: "店員に見せる",
+    tapToFlip: "タップして質問を切り替え",
+    lowerRisk: "低リスク",
+    phrasePreview: "フレーズプレビュー",
+    vendorContains: "入っている",
+    vendorNo: "入っていない",
+    vendorNotSure: "わからない",
   },
   CN: {
     intro: "吃之前我们一起确认。",
@@ -184,6 +387,70 @@ const copy: Record<Lang, Record<string, string>> = {
     safer: "更低风险选择",
     phrase: "泰语短语卡",
     vendor: "摊主回复模式",
+    cautionTable: "注意事项",
+    menuScanResults: "菜单扫描结果",
+    sortedByRisk: "已按你的档案风险排序。点单前请把每行的泰语句子给摊主确认。",
+    colMenuItem: "菜品",
+    colPossibleCautions: "可能注意事项",
+    colRisk: "风险",
+    colAskVendor: "问摊主",
+    colAction: "操作",
+    review: "详情",
+    askOnly: "仅询问",
+    chooseProtein: "选择 {safe}。避免 {avoid}。",
+    allProteinsConflict: "列出的蛋白质 ({avoid}) 都与你的档案冲突 — 请询问菜单外的选择。",
+    ocrFooterNote: "菜单 OCR 无法证实成分或交叉接触。请用此表提出更好的问题,然后向摊主确认。",
+    menuScannerEyebrow: "菜单扫描",
+    menuScannerTitle: "扫描泰国菜单,问出关键问题。",
+    menuScannerSub: "系统会自动应用你的档案,估算风险并帮你向摊主确认。",
+    uploadMenuPhoto: "上传菜单照片",
+    uploadDescription: "选择菜单板照片,我们会转换为可用的注意事项表。",
+    uploadMenu: "上传菜单",
+    removeImage: "删除照片",
+    scanMenu: "扫描菜单",
+    scanning: "扫描中…",
+    useSampleMenu: "使用示例菜单",
+    searchPlaceholder: "可选菜单提示,例如咖喱、炒饭",
+    noMenuDetected: "未检测到菜单项。请把菜单板拍得更清晰一些。",
+    scanFailed: "扫描失败",
+    cannotReachService: "无法连接扫描服务。",
+    pleaseChooseImage: "请选择图片文件 (JPG、PNG、HEIC)。",
+    couldNotReadImage: "无法读取此图片,请换一张。",
+    tryAgain: "请重试。",
+    demoOcr: "演示 OCR",
+    modeMenu: "菜单",
+    modeVoice: "语音",
+    modeType: "输入",
+    apiProfileEyebrow: "你的档案",
+    foodNeedsApplied: "饮食需求已应用",
+    profileLoading: "加载中",
+    profileApi: "API",
+    profileLocal: "本地",
+    profileFallback: "备用",
+    profileDemo: "演示",
+    allergensHeader: "过敏原",
+    dietsHeader: "饮食限制",
+    noProfileSelected: "尚未选择过敏原或饮食限制。",
+    backToCheckAnother: "返回查看其他菜",
+    showThisToVendor: "请给摊主看",
+    romanizedMeaning: "罗马音意思",
+    playAudio: "播放礼貌泰语",
+    yourProfileTitle: "此句检查的内容",
+    askThenDecide: "先问,再决定",
+    crossContactNote: "我们根据常见食谱估算可能成分。街头小吃每家做法不同,可能通过研钵、炒锅、油、勺子、砧板发生交叉接触。",
+    offlinePopularDishes: "离线热门菜",
+    confirmWithVendor: "请务必向摊主确认。",
+    possibleMatch: "可能与你的档案匹配",
+    noOfflineCommonIngredients: "离线菜品数据中没有主要过敏原或隐藏成分。",
+    openPhraseCard: "打开泰语短语卡",
+    playThaiAudio: "播放泰语音频",
+    showVendor: "给摊主看",
+    tapToFlip: "点击切换问题",
+    lowerRisk: "低风险",
+    phrasePreview: "短语预览",
+    vendorContains: "有",
+    vendorNo: "没有",
+    vendorNotSure: "不确定",
   },
   KR: {
     intro: "먹기 전에 함께 확인해요.",
@@ -209,26 +476,41 @@ const copy: Record<Lang, Record<string, string>> = {
     phrase: "بطاقة عبارة تايلندية",
     vendor: "وضع رد البائع",
   },
+} as const;
+
+type CopyKey = keyof typeof copy.EN;
+
+function tx(lang: Lang, key: CopyKey): string {
+  const langDict = copy[lang] as Partial<Record<CopyKey, string>>;
+  return langDict?.[key] ?? copy.EN[key] ?? String(key);
+}
+
+// Multi-lang allergen / diet labels. KR/AR fall back to EN if not provided.
+const allergenLabels: Record<Allergen, { icon: string; labels: Partial<Record<Lang, string>> }> = {
+  peanut:    { icon: "🥜", labels: { EN: "Peanut",    TH: "ถั่วลิสง",        JP: "ピーナッツ",     CN: "花生" } },
+  treeNuts:  { icon: "🌰", labels: { EN: "Tree nuts", TH: "ถั่วเปลือกแข็ง",   JP: "木の実",        CN: "坚果" } },
+  shellfish: { icon: "🦐", labels: { EN: "Shellfish", TH: "กุ้ง ปู หอย",      JP: "甲殻類",        CN: "贝类" } },
+  fish:      { icon: "🐟", labels: { EN: "Fish",      TH: "ปลา",             JP: "魚",            CN: "鱼类" } },
+  egg:       { icon: "🥚", labels: { EN: "Egg",       TH: "ไข่",              JP: "卵",            CN: "鸡蛋" } },
+  soy:       { icon: "🫘", labels: { EN: "Soy",       TH: "ถั่วเหลือง",       JP: "大豆",          CN: "大豆" } },
+  milk:      { icon: "🥛", labels: { EN: "Milk",      TH: "นม",              JP: "乳製品",        CN: "牛奶" } },
+  gluten:    { icon: "🌾", labels: { EN: "Gluten",    TH: "กลูเตน/แป้งสาลี",   JP: "グルテン",       CN: "麸质" } },
+  sesame:    { icon: "⚪", labels: { EN: "Sesame",    TH: "งา",               JP: "ごま",          CN: "芝麻" } },
 };
 
-const allergenLabels: Record<Allergen, { label: string; icon: string; thai: string }> = {
-  peanut: { label: "Peanut", icon: "🥜", thai: "ถั่วลิสง" },
-  treeNuts: { label: "Tree nuts", icon: "🌰", thai: "ถั่วเปลือกแข็ง" },
-  shellfish: { label: "Shellfish", icon: "🦐", thai: "กุ้ง ปู หอย" },
-  fish: { label: "Fish", icon: "🐟", thai: "ปลา" },
-  egg: { label: "Egg", icon: "🥚", thai: "ไข่" },
-  soy: { label: "Soy", icon: "🫘", thai: "ถั่วเหลือง" },
-  milk: { label: "Milk", icon: "🥛", thai: "นม" },
-  gluten: { label: "Gluten", icon: "🌾", thai: "กลูเตน/แป้งสาลี" },
-  sesame: { label: "Sesame", icon: "⚪", thai: "งา" },
+const dietLabels: Record<Diet, { icon: string; labels: Partial<Record<Lang, string>> }> = {
+  vegan:       { icon: "🌱", labels: { EN: "Vegan",       TH: "วีแกน",       JP: "ヴィーガン",        CN: "纯素" } },
+  vegetarian:  { icon: "🥬", labels: { EN: "Vegetarian",  TH: "มังสวิรัติ",   JP: "ベジタリアン",      CN: "素食" } },
+  halal:       { icon: "🌙", labels: { EN: "Halal",       TH: "ฮาลาล",       JP: "ハラール",          CN: "清真" } },
+  glutenFree:  { icon: "🌾", labels: { EN: "Gluten-free", TH: "ไม่มีกลูเตน",   JP: "グルテンフリー",    CN: "无麸质" } },
 };
 
-const dietLabels: Record<Diet, { label: string; thai: string; icon: string }> = {
-  vegan: { label: "Vegan", thai: "วีแกน", icon: "🌱" },
-  vegetarian: { label: "Vegetarian", thai: "มังสวิรัติ", icon: "🥬" },
-  halal: { label: "Halal", thai: "ฮาลาล", icon: "🌙" },
-  glutenFree: { label: "Gluten-free", thai: "ไม่มีกลูเตน", icon: "🌾" },
-};
+function allergenLabel(allergen: Allergen, lang: Lang): string {
+  return allergenLabels[allergen].labels[lang] ?? allergenLabels[allergen].labels.EN ?? allergen;
+}
+function dietLabel(diet: Diet, lang: Lang): string {
+  return dietLabels[diet].labels[lang] ?? dietLabels[diet].labels.EN ?? diet;
+}
 
 const ingredientBank = {
   fishSauce: {
@@ -418,6 +700,23 @@ function mapServerRow(row: ServerMenuRow, index: number): MenuCautionRow | null 
     .filter((key): key is IngredientKey => key in ingredientBank)
     .map((key) => ingredientBank[key]);
 
+  // Backend prepends "Protein options: beef / pork / chicken / fish" as the first
+  // caution note. Pull it back into a structured field so we can apply per-protein logic.
+  const rawNotes = Array.isArray(row.cautionNotes) ? row.cautionNotes : [];
+  let proteinOptions: string[] | undefined;
+  const cautionNotes: string[] = [];
+  for (const note of rawNotes) {
+    const match = /^Protein options:\s*(.+)$/i.exec(note.trim());
+    if (match && !proteinOptions) {
+      proteinOptions = match[1]
+        .split(/\s*\/\s*/)
+        .map((p) => p.trim().toLowerCase())
+        .filter(Boolean);
+      continue;
+    }
+    cautionNotes.push(note);
+  }
+
   return {
     id: `scan-${index}-${slugify(row.english || row.thai)}`,
     thai: row.thai || row.english,
@@ -425,8 +724,9 @@ function mapServerRow(row: ServerMenuRow, index: number): MenuCautionRow | null 
     price: row.price?.trim() || "—",
     confidence: row.confidence,
     likelyContains: ingredients,
-    cautionNotes: Array.isArray(row.cautionNotes) ? row.cautionNotes : [],
+    cautionNotes,
     askVendor: row.askVendor || "",
+    proteinOptions,
   };
 }
 
@@ -668,6 +968,25 @@ function findDish(query: string) {
   );
 }
 
+// Strict variant: returns undefined when nothing matches (no Pad Thai fallback).
+// Used by the scan-row enricher so an unmatched scanned dish doesn't masquerade
+// as a known canonical dish. Matches in either direction so a noisy scanned
+// query like "Holy Basil Stir-fry (beef/pork) ผัดกะเพรา" still finds pad-krapow.
+function findDishStrict(query: string): Dish | undefined {
+  const q = query.trim().toLowerCase();
+  if (q.length < 3) return undefined;
+  for (const dish of dishes) {
+    const fields = [dish.id, dish.english, dish.thai, dish.romanized]
+      .map((f) => f.toLowerCase())
+      .filter((f) => f.length >= 3);
+    // Forward: scanned query embeds a canonical field (e.g. query has "ผัดกะเพรา")
+    if (fields.some((f) => q.includes(f))) return dish;
+    // Reverse: a canonical field embeds the scanned query (rare but possible)
+    if (fields.some((f) => f.includes(q))) return dish;
+  }
+  return undefined;
+}
+
 function scoreDish(dish: Dish, profile: Profile): AnalysisResult {
   const sensitivities = [...profile.allergens, ...profile.diets];
   const matched = dish.commonlyContains.flatMap((ingredient) =>
@@ -699,43 +1018,202 @@ function scoreDish(dish: Dish, profile: Profile): AnalysisResult {
   };
 }
 
-function scoreMenuRow(row: MenuCautionRow, profile: Profile) {
-  const sensitivities = [...profile.allergens, ...profile.diets];
-  const matches = row.likelyContains.flatMap((ingredient) =>
-    ingredient.flags
-      .filter((flag) => sensitivities.includes(flag as never))
-      .map((flag) => ({ flag, ingredient: ingredient.label })),
-  );
-  const directAllergen = matches.some((match) => profile.allergens.includes(match.flag as Allergen));
-  const directDietConflict = matches.some((match) => profile.diets.includes(match.flag as Diet));
+// Severe allergens that make any single direct match auto-High.
+// Other allergens (soy, sesame, milk, gluten) are treated as Medium when isolated.
+const SEVERE_ALLERGENS: Allergen[] = ["peanut", "shellfish", "fish", "treeNuts"];
 
-  let risk: Risk = row.cautionNotes.length ? "Medium" : "Unknown";
-  if (directAllergen || (directDietConflict && profile.diets.some((diet) => ["vegan", "vegetarian", "halal"].includes(diet)))) {
-    risk = "High";
-  } else if (directDietConflict || matches.length > 0) {
-    risk = "Medium";
+// Per-lang glue text inside "{ingredient} may conflict with {flag}" reasons,
+// plus the fallback when no profile match exists.
+const REASON_TEMPLATES: Record<Lang, { conflict: (ing: string, flag: string) => string; fallback: string }> = {
+  EN: { conflict: (i, f) => `${i} may conflict with ${f}`, fallback: "Recipe varies by vendor. Use this as a question list, not a safety guarantee." },
+  TH: { conflict: (i, f) => `${i} อาจขัดกับ ${f}`,           fallback: "สูตรขึ้นกับร้าน ใช้เป็นรายการคำถาม ไม่ใช่การยืนยันความปลอดภัย" },
+  JP: { conflict: (i, f) => `${i} は ${f} と競合する可能性があります`, fallback: "レシピは店ごとに異なります。質問リストとして使い、安全保証ではありません。" },
+  CN: { conflict: (i, f) => `${i} 可能与 ${f} 冲突`,         fallback: "配方因店而异。请将此作为问题清单使用,不能保证安全。" },
+  KR: { conflict: (i, f) => `${i} 이(가) ${f} 와 충돌할 수 있습니다`, fallback: "레시피는 가게마다 다릅니다. 안전 보장이 아닌 질문 목록으로 사용하세요." },
+  AR: { conflict: (i, f) => `${i} قد يتعارض مع ${f}`,        fallback: "تختلف الوصفة حسب البائع. استخدمها كقائمة أسئلة وليس ضماناً للسلامة." },
+};
+
+function scoreMenuRow(row: MenuCautionRow, profile: Profile, lang: Lang = "EN") {
+  const allergenSet = new Set<Allergen>(profile.allergens);
+  const dietSet = new Set<Diet>(profile.diets);
+
+  const allergenMatches: { flag: Allergen; ingredient: string }[] = [];
+  const dietMatches: { flag: Diet; ingredient: string }[] = [];
+
+  for (const ingredient of row.likelyContains) {
+    for (const flag of ingredient.flags) {
+      if (allergenSet.has(flag as Allergen)) {
+        allergenMatches.push({ flag: flag as Allergen, ingredient: ingredient.label });
+      } else if (dietSet.has(flag as Diet)) {
+        dietMatches.push({ flag: flag as Diet, ingredient: ingredient.label });
+      }
+    }
   }
 
-  const reasons = matches.length
-    ? Array.from(new Set(matches.map((match) => `${match.ingredient} may conflict with ${labelForFlag(String(match.flag))}`)))
-    : ["Recipe varies by vendor. Use this as a question list, not a safety guarantee."];
+  const hasSevere = allergenMatches.some((m) => SEVERE_ALLERGENS.includes(m.flag));
+  let risk: Risk;
+  if (hasSevere || allergenMatches.length >= 2) {
+    risk = "High";
+  } else if (allergenMatches.length === 1) {
+    // single mild allergen (e.g. soy alone)
+    risk = "Medium";
+  } else if (dietMatches.length > 0) {
+    // diet conflict only — important but not life-threatening
+    risk = "Medium";
+  } else if (row.cautionNotes.length) {
+    risk = "Medium";
+  } else {
+    risk = "Low";
+  }
 
-  return { risk, reasons };
+  const tpl = REASON_TEMPLATES[lang] ?? REASON_TEMPLATES.EN;
+  const reasons = [
+    ...allergenMatches.map((m) => tpl.conflict(m.ingredient, labelForFlag(m.flag, lang))),
+    ...dietMatches.map((m) => tpl.conflict(m.ingredient, labelForFlag(m.flag, lang))),
+  ];
+  const dedupedReasons = Array.from(new Set(reasons));
+
+  return {
+    risk,
+    reasons: dedupedReasons.length ? dedupedReasons : [tpl.fallback],
+    allergenMatches,
+    dietMatches,
+  };
 }
 
-function labelForFlag(flag: string) {
-  if (flag in allergenLabels) return allergenLabels[flag as Allergen].label;
-  if (flag in dietLabels) return dietLabels[flag as Diet].label;
+function labelForFlag(flag: string, lang: Lang = "EN") {
+  if (flag in allergenLabels) return allergenLabel(flag as Allergen, lang);
+  if (flag in dietLabels) return dietLabel(flag as Diet, lang);
   return flag;
 }
 
+// English ingredient label → Thai. Used inside Thai phrase to localize ingredient
+// names that come from the canonical ingredientBank (which is English-keyed).
+const INGREDIENT_TH: Record<string, string> = {
+  "Fish sauce": "น้ำปลา",
+  "Shrimp paste": "กะปิ",
+  Peanuts: "ถั่วลิสง",
+  Egg: "ไข่",
+  "Oyster sauce": "น้ำมันหอย",
+  "Dried shrimp": "กุ้งแห้ง",
+  "Bone broth": "น้ำซุปกระดูก",
+  "Soy sauce": "ซีอิ๊ว",
+  "Wheat noodles": "เส้นที่มีแป้งสาลี",
+  "Coconut milk": "กะทิ",
+  "Sesame seeds": "งา",
+  Pork: "หมู",
+};
+
 function buildThaiPhrase(profile: Profile, dish: Dish) {
-  const allergyText = profile.allergens.map((allergen) => allergenLabels[allergen].thai).join(" และ ");
-  const dietText = profile.diets.map((diet) => dietLabels[diet].thai).join(" และ ");
-  const askParts = [
-    allergyText ? `ฉันแพ้${allergyText}` : "",
-    dietText ? `ฉันทาน${dietText}` : "",
-  ].filter(Boolean);
+  // Thai phrase is for the Thai vendor — always in Thai regardless of user language.
+  const allergyLines = profile.allergens.map((a) => `• ${allergenLabel(a, "TH")}`);
+  const dietText = profile.diets.map((d) => dietLabel(d, "TH")).join(" / ");
+
+  const riskyIngredients = Array.from(
+    new Set(
+      dish.commonlyContains
+        .filter((ingredient) =>
+          ingredient.flags.some((flag) => [...profile.allergens, ...profile.diets].includes(flag as never)),
+        )
+        .map((ingredient) => INGREDIENT_TH[ingredient.label] ?? ingredient.label),
+    ),
+  );
+
+  const lines: string[] = ["สวัสดีค่ะ 🙏"];
+
+  if (allergyLines.length) {
+    lines.push("", "ฉันแพ้:", ...allergyLines);
+  }
+  if (dietText) {
+    lines.push("", `ฉันทาน: ${dietText}`);
+  }
+  if (!allergyLines.length && !dietText) {
+    lines.push("", "ฉันมีข้อจำกัดเรื่องอาหาร");
+  }
+
+  lines.push("", `เมนู ${dish.thai} มีส่วนผสมเหล่านี้ไหมคะ?`);
+  if (riskyIngredients.length) {
+    for (const ing of riskyIngredients) lines.push(`• ${ing}`);
+  } else {
+    lines.push("(ส่วนผสมที่ควรระวัง)");
+  }
+
+  lines.push("", "และใช้อุปกรณ์/กระทะ/น้ำมันร่วมกับเมนูที่มีส่วนผสมเหล่านี้ไหมคะ?");
+
+  return lines.join("\n");
+}
+
+// Per-language labels for the structured romanized phrase. Mirrors the bulleted
+// Thai phrase so the user can verify what they're handing the vendor.
+const PHRASE_LABELS: Record<Lang, {
+  hello: string;
+  imAllergic: string;
+  iFollow: string;
+  noRestrictions: string;
+  ingredientAsk: (dish: string) => string;
+  noSpecific: string;
+  crossContact: string;
+}> = {
+  EN: {
+    hello: "Hello 🙏",
+    imAllergic: "I'm allergic to:",
+    iFollow: "I follow:",
+    noRestrictions: "I have dietary restrictions.",
+    ingredientAsk: (d) => `Does ${d} contain any of these?`,
+    noSpecific: "(any risky ingredients)",
+    crossContact: "And is it cooked with shared tools, woks, or oil with dishes that contain them?",
+  },
+  TH: {
+    hello: "สวัสดีค่ะ 🙏",
+    imAllergic: "ฉันแพ้:",
+    iFollow: "ฉันทาน:",
+    noRestrictions: "ฉันมีข้อจำกัดเรื่องอาหาร",
+    ingredientAsk: (d) => `เมนู ${d} มีส่วนผสมเหล่านี้ไหมคะ?`,
+    noSpecific: "(ส่วนผสมที่ควรระวัง)",
+    crossContact: "และใช้อุปกรณ์/กระทะ/น้ำมันร่วมกับเมนูที่มีส่วนผสมเหล่านี้ไหมคะ?",
+  },
+  JP: {
+    hello: "こんにちは 🙏",
+    imAllergic: "私は次のものにアレルギーがあります:",
+    iFollow: "食事制限:",
+    noRestrictions: "私には食事制限があります。",
+    ingredientAsk: (d) => `${d} には次のものが含まれていますか?`,
+    noSpecific: "(注意すべき材料)",
+    crossContact: "また、これらの材料を含む料理と調理器具・鍋・油を共有していますか?",
+  },
+  CN: {
+    hello: "你好 🙏",
+    imAllergic: "我对以下食物过敏:",
+    iFollow: "我的饮食限制:",
+    noRestrictions: "我有饮食限制。",
+    ingredientAsk: (d) => `${d} 里含有以下成分吗?`,
+    noSpecific: "(需要注意的成分)",
+    crossContact: "与含这些成分的菜共用厨具、锅或油吗?",
+  },
+  KR: {
+    hello: "안녕하세요 🙏",
+    imAllergic: "저는 다음에 알레르기가 있습니다:",
+    iFollow: "식이 제한:",
+    noRestrictions: "저는 식이 제한이 있습니다.",
+    ingredientAsk: (d) => `${d}에 다음 성분이 들어 있나요?`,
+    noSpecific: "(주의할 성분)",
+    crossContact: "이 성분이 들어간 요리와 도구나 기름을 공유하나요?",
+  },
+  AR: {
+    hello: "مرحباً 🙏",
+    imAllergic: "أعاني من حساسية تجاه:",
+    iFollow: "أتبع نظام:",
+    noRestrictions: "لدي قيود غذائية.",
+    ingredientAsk: (d) => `هل يحتوي ${d} على أيٍّ من هذه؟`,
+    noSpecific: "(مكونات يجب الحذر منها)",
+    crossContact: "وهل يُطهى بأدوات أو مقالٍ أو زيتٍ مشترك مع أطباق تحتوي عليها؟",
+  },
+};
+
+function romanizePhrase(profile: Profile, dish: Dish, lang: Lang = "EN") {
+  const labels = PHRASE_LABELS[lang] ?? PHRASE_LABELS.EN;
+  const allergyLines = profile.allergens.map((a) => `• ${allergenLabel(a, lang)}`);
+  const dietText = profile.diets.map((d) => dietLabel(d, lang)).join(" / ");
   const riskyIngredients = Array.from(
     new Set(
       dish.commonlyContains
@@ -745,38 +1223,176 @@ function buildThaiPhrase(profile: Profile, dish: Dish) {
         .map((ingredient) => ingredient.label),
     ),
   );
-  const mappedIngredients = riskyIngredients
-    .map((ingredient) => {
-      const dictionary: Record<string, string> = {
-        "Fish sauce": "น้ำปลา",
-        "Shrimp paste": "กะปิ",
-        Peanuts: "ถั่วลิสง",
-        Egg: "ไข่",
-        "Oyster sauce": "น้ำมันหอย",
-        "Dried shrimp": "กุ้งแห้ง",
-        "Bone broth": "น้ำซุปกระดูก",
-        "Soy sauce": "ซีอิ๊ว",
-        "Wheat noodles": "เส้นที่มีแป้งสาลี",
-      };
-      return dictionary[ingredient] ?? ingredient;
-    })
-    .join(" หรือ ");
 
-  const intro = askParts.length ? askParts.join(" และ ") : "ฉันมีข้อจำกัดเรื่องอาหาร";
-  const ingredientAsk = mappedIngredients
-    ? `เมนู${dish.thai}มี${mappedIngredients}ไหมคะ`
-    : `เมนู${dish.thai}มีส่วนผสมที่ควรระวังไหมคะ`;
+  const lines: string[] = [labels.hello];
+  if (allergyLines.length) {
+    lines.push("", labels.imAllergic, ...allergyLines);
+  }
+  if (dietText) {
+    lines.push("", `${labels.iFollow} ${dietText}`);
+  }
+  if (!allergyLines.length && !dietText) {
+    lines.push("", labels.noRestrictions);
+  }
+  lines.push("", labels.ingredientAsk(dish.english));
+  if (riskyIngredients.length) {
+    for (const ing of riskyIngredients) lines.push(`• ${ing}`);
+  } else {
+    lines.push(labels.noSpecific);
+  }
+  lines.push("", labels.crossContact);
 
-  return `สวัสดีค่ะ ${intro} ${ingredientAsk} และใช้อุปกรณ์หรือน้ำมันร่วมกับอาหารที่มีส่วนผสมนี้ไหมคะ`;
+  return lines.join("\n");
 }
 
-function romanizePhrase(profile: Profile, dish: Dish) {
-  const items = [
-    ...profile.allergens.map((allergen) => allergenLabels[allergen].label),
-    ...profile.diets.map((diet) => dietLabels[diet].label),
-  ];
-  const needs = items.length ? items.join(", ") : "dietary restrictions";
-  return `Sawasdee kha. I have ${needs}. Does ${dish.english} contain risky ingredients, or share tools or oil with them?`;
+// Flags each protein choice (as written next to a Thai dish) raises against
+// allergens/diets. Conservative: when in doubt, list it so we can warn the user.
+const PROTEIN_FLAGS: Record<string, Array<Allergen | Diet>> = {
+  pork:    ["halal", "vegan", "vegetarian"],
+  shrimp:  ["shellfish", "vegan", "vegetarian"],
+  fish:    ["fish", "vegan", "vegetarian"],
+  squid:   ["shellfish", "vegan", "vegetarian"],
+  beef:    ["vegan", "vegetarian"],
+  chicken: ["vegan", "vegetarian"],
+  egg:     ["egg", "vegan"],
+  tofu:    ["soy"],
+  offal:   ["halal", "vegan", "vegetarian"],
+};
+
+const PROTEIN_LABELS_I18N: Record<string, Partial<Record<Lang, string>>> = {
+  pork:    { EN: "pork",    TH: "หมู",        JP: "豚肉",   CN: "猪肉" },
+  shrimp:  { EN: "shrimp",  TH: "กุ้ง",        JP: "エビ",    CN: "虾" },
+  fish:    { EN: "fish",    TH: "ปลา",        JP: "魚",     CN: "鱼" },
+  squid:   { EN: "squid",   TH: "ปลาหมึก",    JP: "イカ",    CN: "鱿鱼" },
+  beef:    { EN: "beef",    TH: "เนื้อ",       JP: "牛肉",   CN: "牛肉" },
+  chicken: { EN: "chicken", TH: "ไก่",         JP: "鶏肉",   CN: "鸡肉" },
+  egg:     { EN: "egg",     TH: "ไข่",         JP: "卵",     CN: "鸡蛋" },
+  tofu:    { EN: "tofu",    TH: "เต้าหู้",      JP: "豆腐",   CN: "豆腐" },
+  offal:   { EN: "offal",   TH: "เครื่องใน",    JP: "内臓",   CN: "内脏" },
+};
+
+function proteinLabel(key: string, lang: Lang): string {
+  return PROTEIN_LABELS_I18N[key]?.[lang] ?? PROTEIN_LABELS_I18N[key]?.EN ?? key;
+}
+
+type ProteinHint = {
+  safe: string[];
+  avoid: string[];
+  note: string;
+};
+
+// Localized "Choose X. Avoid Y." templates.
+const CHOOSE_AVOID_TEMPLATES: Record<Lang, (safe: string, avoid: string) => string> = {
+  EN: (s, a) => `Choose ${s}. Avoid ${a}.`,
+  TH: (s, a) => `เลือก ${s} หลีกเลี่ยง ${a}`,
+  JP: (s, a) => `${s} を選んでください。${a} は避けてください。`,
+  CN: (s, a) => `选择 ${s}。避免 ${a}。`,
+  KR: (s, a) => `${s} 을(를) 선택하세요. ${a} 은(는) 피하세요.`,
+  AR: (s, a) => `اختر ${s}. تجنب ${a}.`,
+};
+const ALL_AVOID_TEMPLATES: Record<Lang, (avoid: string) => string> = {
+  EN: (a) => `All listed proteins (${a}) conflict with your profile — ask for an off-menu option.`,
+  TH: (a) => `เนื้อสัตว์ที่มีให้ (${a}) ขัดกับโปรไฟล์ทั้งหมด — ลองขอเมนูพิเศษนอกเมนู`,
+  JP: (a) => `表示されているたんぱく源 (${a}) はすべてプロフィールと合いません — メニューにない選択肢を尋ねてみてください。`,
+  CN: (a) => `列出的蛋白质 (${a}) 都与你的档案冲突 — 请询问菜单外的选择。`,
+  KR: (a) => `표시된 단백질 (${a}) 모두 프로필과 맞지 않습니다 — 메뉴에 없는 옵션을 문의하세요.`,
+  AR: (a) => `جميع البروتينات المعروضة (${a}) تتعارض مع ملفك — اطلب خياراً خارج القائمة.`,
+};
+const JOIN_OR: Record<Lang, string> = {
+  EN: " or ", TH: " หรือ ", JP: " または ", CN: " 或 ", KR: " 또는 ", AR: " أو ",
+};
+const JOIN_AND: Record<Lang, string> = {
+  EN: " & ", TH: " และ ", JP: " と ", CN: " 和 ", KR: " 그리고 ", AR: " و ",
+};
+
+function buildProteinHint(
+  proteinOptions: string[] | undefined,
+  profile: Profile,
+  lang: Lang = "EN",
+): ProteinHint | undefined {
+  if (!proteinOptions?.length) return undefined;
+  const sensitivities = new Set<string>([...profile.allergens, ...profile.diets]);
+  const safe: string[] = [];
+  const avoid: string[] = [];
+  for (const raw of proteinOptions) {
+    const key = raw.trim().toLowerCase();
+    const label = proteinLabel(key, lang);
+    const flags = PROTEIN_FLAGS[key] ?? [];
+    if (flags.some((f) => sensitivities.has(f))) avoid.push(label);
+    else safe.push(label);
+  }
+  if (!avoid.length) return undefined; // every option is fine — no need to clutter
+  if (!safe.length) {
+    return {
+      safe,
+      avoid,
+      note: ALL_AVOID_TEMPLATES[lang](avoid.join(", ")),
+    };
+  }
+  return {
+    safe,
+    avoid,
+    note: CHOOSE_AVOID_TEMPLATES[lang](safe.join(JOIN_OR[lang]), avoid.join(JOIN_AND[lang])),
+  };
+}
+
+// Wrap a scanned row in a Dish-shaped object so existing helpers (buildThaiPhrase,
+// romanizePhrase) can operate on it without a special branch.
+function syntheticDishFromRow(row: MenuCautionRow): Dish {
+  return {
+    id: row.id,
+    thai: row.thai,
+    english: row.english,
+    romanized: "",
+    category: "scanned menu item",
+    baseRisk: "Medium",
+    confidence: row.confidence,
+    commonlyContains: row.likelyContains,
+    hiddenAsks: row.cautionNotes,
+    crossContact: [],
+    saferAlternativeIds: [],
+  };
+}
+
+type EnrichedScanRow = MenuCautionRow & {
+  risk: Risk;
+  uncertain: boolean;
+  allergenMatches: { flag: Allergen; ingredient: string }[];
+  dietMatches: { flag: Diet; ingredient: string }[];
+  proteinHint?: ProteinHint;
+  matchedDish?: Dish;
+  askVendorTH: string;
+  askVendorUserLang: string;
+};
+
+const RISK_ORDER: Record<Risk, number> = { High: 0, Medium: 1, Unknown: 2, Low: 3 };
+
+function enrichScanRow(row: MenuCautionRow, profile: Profile): EnrichedScanRow {
+  const lang = profile.language;
+  const { risk, allergenMatches, dietMatches } = scoreMenuRow(row, profile, lang);
+  const matchedDish =
+    (row.matchedDishId && dishes.find((d) => d.id === row.matchedDishId)) ||
+    findDishStrict(`${row.english} ${row.thai}`);
+  const dishForPhrase = matchedDish ?? syntheticDishFromRow(row);
+  const proteinHint = buildProteinHint(row.proteinOptions, profile, lang);
+  const uncertain =
+    row.confidence === "Low" && (risk === "High" || risk === "Medium");
+
+  return {
+    ...row,
+    risk,
+    uncertain,
+    allergenMatches,
+    dietMatches,
+    proteinHint,
+    matchedDish,
+    askVendorTH: buildThaiPhrase(profile, dishForPhrase),
+    askVendorUserLang: romanizePhrase(profile, dishForPhrase, lang),
+  };
+}
+
+function sortEnrichedRows(rows: EnrichedScanRow[]): EnrichedScanRow[] {
+  return [...rows].sort((a, b) => RISK_ORDER[a.risk] - RISK_ORDER[b.risk]);
 }
 
 function AppChip({
@@ -963,7 +1579,7 @@ export default function Home() {
   };
 
   const phrase = buildThaiPhrase(profile, result.dish);
-  const romanizedPhrase = romanizePhrase(profile, result.dish);
+  const romanizedPhrase = romanizePhrase(profile, result.dish, profile.language);
 
   return (
     <main className="min-h-screen w-full pb-28 text-foreground">
@@ -1033,7 +1649,7 @@ export default function Home() {
         {screen !== "home" ? (
           <Button className="w-full justify-start" onClick={() => setScreen("home")} variant="outline">
             <ChevronLeft className="h-5 w-5" />
-            Back to check another dish
+            {tx(profile.language, "backToCheckAnother")}
           </Button>
         ) : null}
 
@@ -1062,11 +1678,6 @@ export default function Home() {
             t={t}
             onOpenPhrase={() => setScreen("phrase")}
             onSpeak={() => speakThai(phrase)}
-            phrase={phrase}
-            romanizedPhrase={romanizedPhrase}
-            vendorQuestionIndex={vendorQuestionIndex}
-            setVendorQuestionIndex={setVendorQuestionIndex}
-            analyzeDish={analyzeDish}
           />
         ) : null}
 
@@ -1078,6 +1689,8 @@ export default function Home() {
             romanizedPhrase={romanizedPhrase}
             speakThai={speakThai}
             t={t}
+            vendorQuestionIndex={vendorQuestionIndex}
+            setVendorQuestionIndex={setVendorQuestionIndex}
           />
         ) : null}
       </div>
@@ -1147,7 +1760,7 @@ function HomeScreen({
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      setUploadError("Please choose an image file (JPG, PNG, HEIC).");
+      setUploadError(tx(profile.language, "pleaseChooseImage"));
       return;
     }
 
@@ -1155,7 +1768,7 @@ function HomeScreen({
     reader.onload = () => {
       const result = typeof reader.result === "string" ? reader.result : null;
       if (!result) {
-        setUploadError("Could not read this image. Try another one.");
+        setUploadError(tx(profile.language, "couldNotReadImage"));
         return;
       }
       setCapturedFrame(result);
@@ -1164,7 +1777,7 @@ function HomeScreen({
       setScanError("");
       setScanInfo("");
     };
-    reader.onerror = () => setUploadError("Could not read this image. Try another one.");
+    reader.onerror = () => setUploadError(tx(profile.language, "couldNotReadImage"));
     reader.readAsDataURL(file);
   };
 
@@ -1187,6 +1800,7 @@ function HomeScreen({
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
     const formData = new FormData();
     formData.append("file", uploadedFile);
+    formData.append("language", profile.language);
 
     try {
       const resp = await fetch(`${backendUrl}/api/scan-menu`, {
@@ -1202,7 +1816,7 @@ function HomeScreen({
         } catch {
           // not JSON, leave as text
         }
-        setScanError(`Scan failed (${resp.status}). ${detail || "Try again."}`);
+        setScanError(`${tx(profile.language, "scanFailed")} (${resp.status}). ${detail || tx(profile.language, "tryAgain")}`);
         setMenuScanRows([]);
         return;
       }
@@ -1211,12 +1825,12 @@ function HomeScreen({
       const rows = (data.rows ?? []).map(mapServerRow).filter((row): row is MenuCautionRow => row !== null);
 
       if (!rows.length) {
-        setScanInfo("No menu items detected. Try a clearer photo of the menu board.");
+        setScanInfo(tx(profile.language, "noMenuDetected"));
       }
       setMenuScanRows(rows);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
-      setScanError(`Could not reach the scan service. ${message}`);
+      setScanError(`${tx(profile.language, "cannotReachService")} ${message}`);
       setMenuScanRows([]);
     } finally {
       setScanningFrame(false);
@@ -1245,13 +1859,13 @@ function HomeScreen({
     <>
       <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-sm font-black uppercase tracking-[0.18em] text-primary">Menu scanner</p>
+          <p className="text-sm font-black uppercase tracking-[0.18em] text-primary">{tx(profile.language, "menuScannerEyebrow")}</p>
           <h1 className="mt-2 text-3xl font-black leading-tight tracking-tight text-secondary sm:text-5xl">
-            Scan Thai menus, then ask better questions.
+            {tx(profile.language, "menuScannerTitle")}
           </h1>
         </div>
         <p className="max-w-xl text-base font-semibold leading-relaxed text-muted-foreground">
-          Your API profile is applied automatically. We estimate risk, then help you confirm with the vendor.
+          {tx(profile.language, "menuScannerSub")}
         </p>
       </div>
 
@@ -1260,23 +1874,20 @@ function HomeScreen({
         <CardHeader className="bg-white">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-primary">API profile</p>
-              <h1 className="text-2xl font-black leading-tight">Food needs applied</h1>
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-primary">{tx(profile.language, "apiProfileEyebrow")}</p>
+              <h1 className="text-2xl font-black leading-tight">{tx(profile.language, "foodNeedsApplied")}</h1>
               <p className="mt-1 text-sm font-semibold text-muted-foreground">{profileName}</p>
             </div>
             <Badge className="bg-primary text-primary-foreground">
               {profileLoadState === "loading"
-                ? "Loading"
+                ? tx(profile.language, "profileLoading")
                 : profileLoadState === "api"
-                  ? "From API"
+                  ? tx(profile.language, "profileApi")
                   : profileLoadState === "local"
-                    ? "Cached"
-                    : "Demo"}
+                    ? tx(profile.language, "profileLocal")
+                    : tx(profile.language, "profileDemo")}
             </Badge>
           </div>
-          <p className="text-base font-medium leading-relaxed text-muted-foreground">
-            This profile is used for every menu row and dish result. Chips remain adjustable for demo testing.
-          </p>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-2">
@@ -1287,7 +1898,7 @@ function HomeScreen({
                 onClick={() => toggleAllergen(allergen)}
               >
                 <span className="mr-2">{allergenLabels[allergen].icon}</span>
-                {allergenLabels[allergen].label}
+                {allergenLabel(allergen, profile.language)}
               </AppChip>
             ))}
           </div>
@@ -1295,7 +1906,7 @@ function HomeScreen({
             {(Object.keys(dietLabels) as Diet[]).map((diet) => (
               <AppChip active={profile.diets.includes(diet)} key={diet} onClick={() => toggleDiet(diet)}>
                 <span className="mr-2">{dietLabels[diet].icon}</span>
-                {dietLabels[diet].label}
+                {dietLabel(diet, profile.language)}
               </AppChip>
             ))}
           </div>
@@ -1309,9 +1920,9 @@ function HomeScreen({
         <CardContent className="space-y-4">
           <div className="grid grid-cols-3 gap-2 rounded-[1.25rem] bg-muted p-1">
             {[
-              { id: "photo", label: "Menu", icon: Camera },
-              { id: "voice", label: "Voice", icon: Mic },
-              { id: "type", label: "Type", icon: Search },
+              { id: "photo", label: tx(profile.language, "modeMenu"), icon: Camera },
+              { id: "voice", label: tx(profile.language, "modeVoice"), icon: Mic },
+              { id: "type", label: tx(profile.language, "modeType"), icon: Search },
             ].map((item) => {
               const Icon = item.icon;
               return (
@@ -1363,9 +1974,9 @@ function HomeScreen({
                       <div className="grid h-16 w-16 place-items-center rounded-[1.35rem] bg-white/15 backdrop-blur-md">
                         <Upload className="h-8 w-8" />
                       </div>
-                      <h3 className="mt-4 text-2xl font-black leading-tight">Upload a menu photo</h3>
+                      <h3 className="mt-4 text-2xl font-black leading-tight">{tx(profile.language, "uploadMenuPhoto")}</h3>
                       <p className="mt-2 text-sm font-semibold leading-relaxed text-white/75">
-                        Pick a photo of the menu board and we&apos;ll turn it into a caution table you can act on.
+                        {tx(profile.language, "uploadDescription")}
                       </p>
                     </div>
                   ) : null}
@@ -1401,35 +2012,23 @@ function HomeScreen({
               <div className="grid grid-cols-2 gap-2">
                 {capturedFrame ? (
                   <Button onClick={clearUpload} size="lg" variant="outline">
-                    Remove image
+                    {tx(profile.language, "removeImage")}
                   </Button>
                 ) : (
                   <Button onClick={openMenuUpload} size="lg" variant="secondary">
                     <Upload className="h-5 w-5" />
-                    Upload menu
+                    {tx(profile.language, "uploadMenu")}
                   </Button>
                 )}
                 <Button disabled={!capturedFrame || scanningFrame} onClick={scanCameraFrame} size="lg">
                   <Sparkles className="h-5 w-5" />
-                  {scanningFrame ? "Scanning menu..." : "Scan menu"}
+                  {scanningFrame ? tx(profile.language, "scanning") : tx(profile.language, "scanMenu")}
                 </Button>
               </div>
               <Button className="w-full" onClick={() => setMenuScanRows(sampleMenuRows)} size="lg" variant="outline">
-                Use sample Thai menu
+                {tx(profile.language, "useSampleMenu")}
               </Button>
 
-              <label className="relative block">
-                <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-primary" />
-                <input
-                  className="h-14 w-full rounded-[1.25rem] border border-border bg-white pl-12 pr-4 text-base font-bold outline-none focus:border-primary focus:ring-4 focus:ring-primary/15"
-                  onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Optional menu hint, e.g. curry, fried rice"
-                  value={query}
-                />
-              </label>
-              <p className="text-sm font-semibold leading-relaxed text-muted-foreground">
-                Demo only: this captures a frame and loads sample OCR results. A real ChatGPT vision/OCR call can plug in here later.
-              </p>
               {menuScanRows.length ? (
                 <MenuCautionTable analyzeDish={analyzeDish} profile={profile} rows={menuScanRows} />
               ) : null}
@@ -1467,7 +2066,7 @@ function HomeScreen({
           ) : null}
 
           <div className="space-y-2">
-            <p className="text-sm font-black text-muted-foreground">Offline popular dishes</p>
+            <p className="text-sm font-black text-muted-foreground">{tx(profile.language, "offlinePopularDishes")}</p>
             <div className="grid gap-2">
               {suggestions.map((dish) => (
                 <button
@@ -1495,51 +2094,18 @@ function HomeScreen({
 }
 
 function ResultScreen({
-  analyzeDish,
   onOpenPhrase,
   onSpeak,
-  phrase,
   profile,
   result,
-  romanizedPhrase,
-  setVendorQuestionIndex,
   t,
-  vendorQuestionIndex,
 }: {
-  analyzeDish: (dish: Dish) => void;
   onOpenPhrase: () => void;
   onSpeak: () => void;
-  phrase: string;
   profile: Profile;
   result: AnalysisResult;
-  romanizedPhrase: string;
-  setVendorQuestionIndex: React.Dispatch<React.SetStateAction<number>>;
   t: Record<string, string>;
-  vendorQuestionIndex: number;
 }) {
-  const safer = result.dish.saferAlternativeIds
-    .map((id) => dishes.find((dish) => dish.id === id))
-    .filter(Boolean) as Dish[];
-  const vendorQuestions = [
-    {
-      thai: "ใส่ถั่วไหม?",
-      en: "Does it contain peanuts?",
-    },
-    {
-      thai: "มีน้ำปลา กะปิ หรือกุ้งแห้งไหม?",
-      en: "Fish sauce, shrimp paste, or dried shrimp?",
-    },
-    {
-      thai: "ใช้น้ำมันหรือกระทะร่วมกันไหม?",
-      en: "Shared oil, wok, or tools?",
-    },
-    {
-      thai: "ทำแบบไม่ใส่ไข่/น้ำปลาได้ไหม?",
-      en: "Can you make it without egg or fish sauce?",
-    },
-  ];
-  const currentQuestion = vendorQuestions[vendorQuestionIndex % vendorQuestions.length];
-
   return (
     <>
       <Card className="contrast-panel overflow-hidden">
@@ -1571,7 +2137,7 @@ function ResultScreen({
             <div className="flex gap-3">
               <AlertTriangle className="mt-1 h-5 w-5 shrink-0 text-primary" />
               <div>
-                <h2 className="text-lg font-black">Possible match with your profile</h2>
+                <h2 className="text-lg font-black">{tx(profile.language, "possibleMatch")}</h2>
                 <ul className="mt-2 space-y-2 text-sm font-semibold leading-relaxed text-muted-foreground">
                   {result.riskReasons.map((reason) => (
                     <li key={reason}>• {reason}</li>
@@ -1592,7 +2158,7 @@ function ResultScreen({
                 ))}
               </div>
             ) : (
-              <p className="font-semibold text-muted-foreground">No common hidden animal or major allergen ingredient in our offline dish data.</p>
+              <p className="font-semibold text-muted-foreground">{tx(profile.language, "noOfflineCommonIngredients")}</p>
             )}
           </InfoBlock>
 
@@ -1621,19 +2187,80 @@ function ResultScreen({
           <div className="grid gap-3">
             <Button className="w-full" onClick={onOpenPhrase} size="lg" variant="secondary">
               <Languages className="h-5 w-5" />
-              Open Thai phrase card
+              {tx(profile.language, "openPhraseCard")}
             </Button>
             <Button className="w-full" onClick={onSpeak} size="lg" variant="outline">
               <Volume2 className="h-5 w-5" />
-              Play Thai audio
+              {tx(profile.language, "playThaiAudio")}
             </Button>
           </div>
         </CardContent>
       </Card>
 
+    </>
+  );
+}
+
+const VENDOR_QUESTIONS = [
+  { thai: "ใส่ถั่วไหม?", en: "Does it contain peanuts?" },
+  { thai: "มีน้ำปลา กะปิ หรือกุ้งแห้งไหม?", en: "Fish sauce, shrimp paste, or dried shrimp?" },
+  { thai: "ใช้น้ำมันหรือกระทะร่วมกันไหม?", en: "Shared oil, wok, or tools?" },
+  { thai: "ทำแบบไม่ใส่ไข่/น้ำปลาได้ไหม?", en: "Can you make it without egg or fish sauce?" },
+];
+
+function PhraseScreen({
+  dish,
+  phrase,
+  profile,
+  romanizedPhrase,
+  setVendorQuestionIndex,
+  speakThai,
+  t,
+  vendorQuestionIndex,
+}: {
+  dish: Dish;
+  phrase: string;
+  profile: Profile;
+  romanizedPhrase: string;
+  setVendorQuestionIndex: React.Dispatch<React.SetStateAction<number>>;
+  speakThai: (text: string) => void;
+  t: Record<string, string>;
+  vendorQuestionIndex: number;
+}) {
+  const currentQuestion = VENDOR_QUESTIONS[vendorQuestionIndex % VENDOR_QUESTIONS.length];
+  const profileItems = [
+    ...profile.allergens.map((allergen) => `${allergenLabels[allergen].icon} ${allergenLabel(allergen, profile.language)}`),
+    ...profile.diets.map((diet) => `${dietLabels[diet].icon} ${dietLabel(diet, profile.language)}`),
+  ];
+
+  return (
+    <>
+      <Card className="contrast-panel overflow-hidden">
+        <CardHeader className="bg-primary text-white">
+          <p className="text-sm font-bold uppercase tracking-[0.14em] text-white/75">{t.phrase}</p>
+          <h1 className="text-3xl font-black leading-tight">{t.showThisToVendor ?? "Show this to the vendor"}</h1>
+          <p className="font-semibold text-white/80">
+            {dish.english} · {dish.thai}
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-5 pt-5">
+          <div className="rounded-[1.25rem] border-2 border-primary bg-white p-5 text-center">
+            <p className="text-2xl font-bold leading-relaxed text-foreground whitespace-pre-line text-left">{phrase}</p>
+          </div>
+          <div className="rounded-[1.25rem] bg-muted p-4">
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">{t.romanizedMeaning ?? "Romanized meaning"}</p>
+            <p className="mt-2 text-base font-semibold leading-relaxed whitespace-pre-line">{romanizedPhrase}</p>
+          </div>
+          <Button className="w-full" onClick={() => speakThai(phrase)} size="lg">
+            <Volume2 className="h-5 w-5" />
+            {t.playAudio ?? "Play polite Thai audio"}
+          </Button>
+        </CardContent>
+      </Card>
+
       <Card className="contrast-panel">
         <CardHeader>
-          <SectionTitle eyebrow="Show vendor" title={t.vendor} />
+          <SectionTitle eyebrow={tx(profile.language, "showVendor")} title={t.vendor} />
         </CardHeader>
         <CardContent className="space-y-4">
           <button
@@ -1643,99 +2270,22 @@ function ResultScreen({
           >
             <p className="text-3xl font-black leading-snug">{currentQuestion.thai}</p>
             <p className="mt-3 text-base font-semibold text-white/80">{currentQuestion.en}</p>
-            <p className="mt-4 text-sm font-bold text-white/70">Tap to flip question</p>
+            <p className="mt-4 text-sm font-bold text-white/70">{tx(profile.language, "tapToFlip")}</p>
           </button>
           <div className="grid grid-cols-3 gap-2">
-            <VendorAnswer icon={<Check className="h-5 w-5" />} label="ใส่" sub="Contains" />
-            <VendorAnswer icon={<X className="h-5 w-5" />} label="ไม่ใส่" sub="No" />
-            <VendorAnswer icon={<CircleHelp className="h-5 w-5" />} label="ไม่แน่ใจ" sub="Not sure" />
+            <VendorAnswer icon={<Check className="h-5 w-5" />} label="ใส่" sub={tx(profile.language, "vendorContains")} />
+            <VendorAnswer icon={<X className="h-5 w-5" />} label="ไม่ใส่" sub={tx(profile.language, "vendorNo")} />
+            <VendorAnswer icon={<CircleHelp className="h-5 w-5" />} label="ไม่แน่ใจ" sub={tx(profile.language, "vendorNotSure")} />
           </div>
         </CardContent>
       </Card>
 
       <Card className="contrast-panel">
         <CardHeader>
-          <SectionTitle eyebrow="Lower risk" title={t.safer} />
-        </CardHeader>
-        <CardContent className="grid gap-3">
-          {safer.slice(0, 3).map((dish) => (
-            <button
-              className="flex min-h-20 items-center justify-between gap-3 rounded-2xl border border-border bg-white p-4 text-left"
-              key={dish.id}
-              onClick={() => analyzeDish(dish)}
-              type="button"
-            >
-              <span>
-                <span className="block text-base font-black">{dish.english}</span>
-                <span className="block text-sm font-semibold text-muted-foreground">
-                  {dish.thai} · {dish.romanized}
-                </span>
-              </span>
-              <Badge className={riskStyles[scoreDish(dish, profile).risk]}>{scoreDish(dish, profile).risk}</Badge>
-            </button>
-          ))}
-        </CardContent>
-      </Card>
-
-      <Card className="contrast-panel">
-        <CardContent className="space-y-3 pt-5">
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-primary">Phrase preview</p>
-          <p className="text-xl font-black leading-relaxed">{phrase}</p>
-          <p className="text-sm font-semibold leading-relaxed text-muted-foreground">{romanizedPhrase}</p>
-        </CardContent>
-      </Card>
-    </>
-  );
-}
-
-function PhraseScreen({
-  dish,
-  phrase,
-  profile,
-  romanizedPhrase,
-  speakThai,
-  t,
-}: {
-  dish: Dish;
-  phrase: string;
-  profile: Profile;
-  romanizedPhrase: string;
-  speakThai: (text: string) => void;
-  t: Record<string, string>;
-}) {
-  const profileItems = [
-    ...profile.allergens.map((allergen) => `${allergenLabels[allergen].icon} ${allergenLabels[allergen].label}`),
-    ...profile.diets.map((diet) => `${dietLabels[diet].icon} ${dietLabels[diet].label}`),
-  ];
-
-  return (
-    <>
-      <Card className="contrast-panel overflow-hidden">
-        <CardHeader className="bg-primary text-white">
-          <p className="text-sm font-bold uppercase tracking-[0.14em] text-white/75">{t.phrase}</p>
-          <h1 className="text-3xl font-black leading-tight">Show this to the vendor</h1>
-          <p className="font-semibold text-white/80">
-            {dish.english} · {dish.thai}
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-5 pt-5">
-          <div className="rounded-[1.25rem] border-2 border-primary bg-white p-5 text-center">
-            <p className="text-3xl font-black leading-relaxed text-foreground">{phrase}</p>
-          </div>
-          <div className="rounded-[1.25rem] bg-muted p-4">
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">Romanized meaning</p>
-            <p className="mt-2 text-lg font-bold leading-relaxed">{romanizedPhrase}</p>
-          </div>
-          <Button className="w-full" onClick={() => speakThai(phrase)} size="lg">
-            <Volume2 className="h-5 w-5" />
-            Play polite Thai audio
-          </Button>
-        </CardContent>
-      </Card>
-
-      <Card className="contrast-panel">
-        <CardHeader>
-          <SectionTitle eyebrow="Your profile" title="What this phrase checks" />
+          <SectionTitle
+            eyebrow={t.apiProfileEyebrow ?? "Your profile"}
+            title={t.yourProfileTitle ?? "What this phrase checks"}
+          />
         </CardHeader>
         <CardContent className="flex flex-wrap gap-2">
           {profileItems.length ? (
@@ -1745,7 +2295,7 @@ function PhraseScreen({
               </Badge>
             ))
           ) : (
-            <p className="font-semibold text-muted-foreground">No allergies or diets selected yet.</p>
+            <p className="font-semibold text-muted-foreground">{t.noProfileSelected ?? "No allergies or diets selected yet."}</p>
           )}
         </CardContent>
       </Card>
@@ -1755,9 +2305,9 @@ function PhraseScreen({
           <div className="flex gap-3">
             <ShieldCheck className="mt-1 h-6 w-6 shrink-0 text-secondary" />
             <div>
-              <h2 className="text-xl font-black">Ask, then decide</h2>
+              <h2 className="text-xl font-black">{t.askThenDecide ?? "Ask, then decide"}</h2>
               <p className="mt-1 text-base font-semibold leading-relaxed text-muted-foreground">
-                We estimate possible ingredients from common recipes. Street food varies by vendor, and cross-contact can happen with mortars, woks, oil, spoons, and cutting boards.
+                {t.crossContactNote ?? "We estimate possible ingredients from common recipes. Street food varies by vendor, and cross-contact can happen with mortars, woks, oil, spoons, and cutting boards."}
               </p>
             </div>
           </div>
@@ -1776,85 +2326,53 @@ function MenuCautionTable({
   profile: Profile;
   rows: MenuCautionRow[];
 }) {
+  const enriched = useMemo(
+    () => sortEnrichedRows(rows.map((row) => enrichScanRow(row, profile))),
+    [rows, profile],
+  );
+
+  const summary = useMemo(() => {
+    const counts: Record<Risk, number> = { High: 0, Medium: 0, Low: 0, Unknown: 0 };
+    for (const row of enriched) counts[row.risk]++;
+    return counts;
+  }, [enriched]);
+
   return (
     <section className="overflow-hidden rounded-2xl border border-border bg-white">
       <div className="flex items-start justify-between gap-3 border-b border-border bg-muted/70 p-4">
         <div>
-          <p className="text-xs font-black uppercase tracking-[0.16em] text-primary">Caution table</p>
-          <h3 className="mt-1 text-xl font-black text-secondary">Sample menu scan results</h3>
+          <p className="text-xs font-black uppercase tracking-[0.16em] text-primary">{tx(profile.language, "cautionTable")}</p>
+          <h3 className="mt-1 text-xl font-black text-secondary">{tx(profile.language, "menuScanResults")}</h3>
           <p className="mt-1 text-sm font-semibold leading-relaxed text-muted-foreground">
-            Each row is a risk estimate from common recipes. Ask the vendor before ordering.
+            {tx(profile.language, "sortedByRisk")}
           </p>
         </div>
-        <Badge className="bg-primary text-primary-foreground">Demo OCR</Badge>
+        <div className="flex flex-wrap items-center gap-1.5 justify-end">
+          {(["High", "Medium", "Low", "Unknown"] as Risk[])
+            .filter((r) => summary[r] > 0)
+            .map((r) => (
+              <Badge className={cn("text-xs", riskStyles[r])} key={r}>
+                {riskIcon[r]} {summary[r]} {r}
+              </Badge>
+            ))}
+        </div>
       </div>
 
       <div className="overflow-x-auto">
-        <table className="min-w-[760px] w-full border-collapse text-left text-sm">
+        <table className="min-w-[860px] w-full border-collapse text-left text-sm">
           <thead className="bg-white text-xs uppercase tracking-[0.12em] text-muted-foreground">
             <tr>
-              <th className="border-b border-border px-4 py-3 font-black">Menu item</th>
-              <th className="border-b border-border px-4 py-3 font-black">Possible cautions</th>
-              <th className="border-b border-border px-4 py-3 font-black">Risk</th>
-              <th className="border-b border-border px-4 py-3 font-black">Ask vendor</th>
-              <th className="border-b border-border px-4 py-3 font-black">Action</th>
+              <th className="border-b border-border px-4 py-3 font-black">{tx(profile.language, "colMenuItem")}</th>
+              <th className="border-b border-border px-4 py-3 font-black">{tx(profile.language, "colPossibleCautions")}</th>
+              <th className="border-b border-border px-4 py-3 font-black">{tx(profile.language, "colRisk")}</th>
+              <th className="border-b border-border px-4 py-3 font-black">{tx(profile.language, "colAskVendor")}</th>
+              <th className="border-b border-border px-4 py-3 font-black">{tx(profile.language, "colAction")}</th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((row) => {
-              const scored = scoreMenuRow(row, profile);
-              const matchedDish = row.matchedDishId
-                ? dishes.find((dish) => dish.id === row.matchedDishId)
-                : undefined;
-
-              return (
-                <tr className="align-top" key={row.id}>
-                  <td className="border-b border-border px-4 py-4">
-                    <p className="text-base font-black text-secondary">{row.thai}</p>
-                    <p className="mt-1 font-semibold text-muted-foreground">{row.english}</p>
-                    <p className="mt-2 text-xs font-black text-primary">{row.price}</p>
-                  </td>
-                  <td className="border-b border-border px-4 py-4">
-                    <div className="flex flex-wrap gap-2">
-                      {row.likelyContains.map((ingredient) => (
-                        <Badge className="bg-muted text-foreground" key={ingredient.key}>
-                          <span className="mr-1">{ingredient.icon}</span>
-                          {ingredient.label}
-                        </Badge>
-                      ))}
-                    </div>
-                    <ul className="mt-3 space-y-1 font-semibold text-muted-foreground">
-                      {row.cautionNotes.slice(0, 2).map((note) => (
-                        <li key={note}>• {note}</li>
-                      ))}
-                    </ul>
-                  </td>
-                  <td className="border-b border-border px-4 py-4">
-                    <Badge className={riskStyles[scored.risk]}>
-                      {riskIcon[scored.risk]} {scored.risk}
-                    </Badge>
-                    <p className="mt-2 text-xs font-bold text-muted-foreground">
-                      Confidence: {row.confidence}
-                    </p>
-                  </td>
-                  <td className="border-b border-border px-4 py-4">
-                    <p className="font-semibold leading-relaxed text-secondary">{row.askVendor}</p>
-                    <p className="mt-2 text-xs font-semibold leading-relaxed text-muted-foreground">
-                      {scored.reasons[0]}
-                    </p>
-                  </td>
-                  <td className="border-b border-border px-4 py-4">
-                    {matchedDish ? (
-                      <Button onClick={() => analyzeDish(matchedDish)} size="sm" variant="outline">
-                        Review
-                      </Button>
-                    ) : (
-                      <Badge className="bg-muted text-muted-foreground">Ask only</Badge>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
+            {enriched.map((row) => (
+              <MenuCautionTableRow key={row.id} row={row} lang={profile.language} onReview={analyzeDish} />
+            ))}
           </tbody>
         </table>
       </div>
@@ -1863,11 +2381,117 @@ function MenuCautionTable({
         <div className="flex gap-3">
           <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
           <p className="text-sm font-bold leading-relaxed text-secondary">
-            Menu OCR cannot prove ingredients or cross-contact. Use this table to ask better questions, then confirm with the vendor.
+            {tx(profile.language, "ocrFooterNote")}
           </p>
         </div>
       </div>
     </section>
+  );
+}
+
+function MenuCautionTableRow({
+  row,
+  lang,
+  onReview,
+}: {
+  row: EnrichedScanRow;
+  lang: Lang;
+  onReview: (dish: Dish) => void;
+}) {
+  return (
+    <tr className="align-top">
+      <td className="border-b border-border px-4 py-4 align-top">
+        <p className="text-base font-black text-secondary">{row.thai}</p>
+        <p className="mt-1 font-semibold text-muted-foreground">{row.english}</p>
+        <p className="mt-2 text-xs font-black text-primary">{row.price}</p>
+      </td>
+
+      <td className="border-b border-border px-4 py-4 align-top">
+        <div className="flex flex-wrap gap-1.5">
+          {row.likelyContains.map((ingredient) => {
+            const isAllergenHit = row.allergenMatches.some((m) => ingredient.flags.includes(m.flag));
+            const isDietHit = row.dietMatches.some((m) => ingredient.flags.includes(m.flag));
+            return (
+              <Badge
+                className={cn(
+                  "text-xs",
+                  isAllergenHit
+                    ? "bg-rose-100 text-rose-900 border border-rose-200"
+                    : isDietHit
+                      ? "bg-amber-100 text-amber-900 border border-amber-200"
+                      : "bg-muted text-foreground",
+                )}
+                key={ingredient.key}
+              >
+                <span className="mr-1">{ingredient.icon}</span>
+                {ingredient.label}
+              </Badge>
+            );
+          })}
+        </div>
+
+        {row.allergenMatches.length ? (
+          <ul className="mt-2 space-y-0.5 text-xs font-semibold text-rose-700">
+            {Array.from(new Set(row.allergenMatches.map((m) => `${m.ingredient} → ${labelForFlag(m.flag, lang)}`))).map(
+              (line) => (
+                <li key={line}>🚫 {line}</li>
+              ),
+            )}
+          </ul>
+        ) : null}
+
+        {row.dietMatches.length ? (
+          <ul className="mt-2 space-y-0.5 text-xs font-semibold text-amber-800">
+            {Array.from(new Set(row.dietMatches.map((m) => `${m.ingredient} → ${labelForFlag(m.flag, lang)}`))).map(
+              (line) => (
+                <li key={line}>⚠️ {line}</li>
+              ),
+            )}
+          </ul>
+        ) : null}
+
+        {row.proteinHint ? (
+          <p className="mt-2 rounded-lg bg-emerald-50 border border-emerald-200 px-2 py-1 text-xs font-bold text-emerald-900">
+            💡 {row.proteinHint.note}
+          </p>
+        ) : null}
+
+        {row.cautionNotes.length ? (
+          <ul className="mt-2 space-y-0.5 text-xs font-semibold text-muted-foreground">
+            {row.cautionNotes.slice(0, 2).map((note) => (
+              <li key={note}>• {note}</li>
+            ))}
+          </ul>
+        ) : null}
+      </td>
+
+      <td className="border-b border-border px-4 py-4 align-top whitespace-nowrap">
+        <Badge className={cn(riskStyles[row.risk], row.uncertain && "opacity-80")}>
+          {riskIcon[row.risk]} {row.risk}
+          {row.uncertain ? "?" : ""}
+        </Badge>
+        <p className="mt-2 text-xs font-bold text-muted-foreground">
+          {tx(lang, "confidence")}: {row.confidence}
+        </p>
+      </td>
+
+      <td className="border-b border-border px-4 py-4 align-top">
+        <p className="text-sm font-bold leading-snug text-secondary whitespace-pre-line">{row.askVendorTH}</p>
+        <p className="mt-2 text-xs font-semibold leading-relaxed text-muted-foreground whitespace-pre-line">
+          {row.askVendorUserLang}
+        </p>
+      </td>
+
+      <td className="border-b border-border px-4 py-4 align-top">
+        {row.matchedDish ? (
+          <Button onClick={() => onReview(row.matchedDish!)} size="sm" variant="outline">
+            {tx(lang, "review")}
+          </Button>
+        ) : (
+          <Badge className="bg-muted text-muted-foreground">{tx(lang, "askOnly")}</Badge>
+        )}
+      </td>
+    </tr>
   );
 }
 

@@ -26,7 +26,7 @@ from typing import Literal
 
 import httpx
 from dotenv import load_dotenv
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, ValidationError
 
@@ -54,6 +54,25 @@ ConfidenceLevel = Literal["Low", "Medium", "High"]
 MAX_UPLOAD_BYTES = 8 * 1024 * 1024  # 8 MB
 MAX_EXTRACTED_ITEMS = 40
 ALLOWED_MIME_PREFIX = "image/"
+
+LANG_NAMES = {
+    "EN": "English",
+    "TH": "Thai",
+    "JP": "Japanese",
+    "CN": "Simplified Chinese",
+    "KR": "Korean",
+    "AR": "Arabic",
+}
+DEFAULT_LANG = "EN"
+
+FALLBACK_ASK_VENDOR = {
+    "EN": "Could you tell me what's in this dish?",
+    "TH": "บอกหน่อยได้ไหมคะว่าเมนูนี้มีอะไรบ้าง?",
+    "JP": "この料理には何が入っていますか?",
+    "CN": "请问这道菜里有什么?",
+    "KR": "이 요리에는 무엇이 들어 있나요?",
+    "AR": "هل يمكنك إخباري بمكونات هذا الطبق؟",
+}
 
 logger = logging.getLogger("kindee.scan")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
@@ -141,23 +160,31 @@ STAGE2_SYSTEM = (
 )
 
 
-def build_stage2_user_prompt(items: list[ExtractedItem]) -> str:
+def build_stage2_user_prompt(items: list[ExtractedItem], language: str) -> str:
     listing = "\n".join(
         f"{i + 1}. thai={item.thai!r} proteinOptions={item.proteinOptions} price={item.price!r}"
         for i, item in enumerate(items)
     )
+    lang_name = LANG_NAMES.get(language, "English")
     return f"""Below is a list of {len(items)} Thai dishes transcribed from a street-food menu.
-For EACH dish (in order, same length, do NOT skip), produce an analysis object:
+For EACH dish (in order, same length, do NOT skip), produce an analysis object.
 
-- english: literal English translation of THIS Thai name (do not invent a different dish).
-  If the dish has protein options, mention them in parentheses, e.g. "Holy basil stir-fry (beef / pork / chicken / squid)".
-- confidence: "High" if the dish name is well-known and you are confident about typical ingredients;
-  "Medium" if you are reasonably sure; "Low" if the name is unusual or you are guessing.
+WRITE THE TEXT FIELDS (`english`, `cautionNotes`, `askVendor`) IN {lang_name.upper()}.
+Keep the JSON field names in English (do NOT rename `english`, `cautionNotes`, `askVendor`
+even when their content is in {lang_name}). Likewise keep `likelyContains` keys verbatim
+from the allowed list — those are machine identifiers, not display text.
+
+For each item provide:
+- english: literal {lang_name} translation/name of THIS Thai dish (do not invent a different dish).
+  If the dish has protein options, mention them in parentheses
+  (e.g. for English: "Holy basil stir-fry (beef / pork / chicken / squid)";
+   write the protein words in {lang_name} too).
+- confidence: one of "High", "Medium", "Low" (these literal English words — they are enum values).
 - likelyContains: ingredient keys from this CLOSED set (omit any not relevant):
   {ALLOWED_INGREDIENTS}
-- cautionNotes: 1-3 short English notes about hidden ingredients or cross-contact risks
-  for THIS specific dish. Be concrete (e.g. "Curry paste typically contains shrimp paste").
-- askVendor: ONE short, polite English sentence the traveler can ask the vendor about this dish.
+- cautionNotes: 1-3 short {lang_name} notes about hidden ingredients or cross-contact risks
+  for THIS specific dish. Be concrete (e.g. for English: "Curry paste typically contains shrimp paste").
+- askVendor: ONE short, polite {lang_name} sentence the traveler can ask the vendor about this dish.
 
 Return JSON in EXACTLY this shape:
 {{ "analyses": [ {{ "english": "...", "confidence": "...", "likelyContains": [...],
@@ -168,7 +195,7 @@ Critical rules:
 - Never invent ingredient keys outside the allowed set.
 - Base your analysis on the Thai text given — do NOT replace with a more famous dish.
 
-INPUT:
+INPUT (Thai dish list):
 {listing}
 """
 
@@ -253,12 +280,12 @@ async def stage1_extract(image_bytes: bytes, mime: str) -> tuple[list[ExtractedI
     return items, raw
 
 
-async def stage2_analyze(items: list[ExtractedItem]) -> tuple[list[AnalyzedItem], str]:
+async def stage2_analyze(items: list[ExtractedItem], language: str) -> tuple[list[AnalyzedItem], str]:
     if not items:
         return [], ""
     messages = [
         {"role": "system", "content": STAGE2_SYSTEM},
-        {"role": "user", "content": build_stage2_user_prompt(items)},
+        {"role": "user", "content": build_stage2_user_prompt(items, language)},
     ]
     raw = await _call_openrouter(model=OPENROUTER_TEXT_MODEL, messages=messages)
     parsed = _parse_model_json(raw) or {}
@@ -275,11 +302,19 @@ async def stage2_analyze(items: list[ExtractedItem]) -> tuple[list[AnalyzedItem]
     return analyses[: len(items)], raw
 
 
-def merge_to_rows(items: list[ExtractedItem], analyses: list[AnalyzedItem]) -> list[ServerMenuRow]:
+def merge_to_rows(
+    items: list[ExtractedItem],
+    analyses: list[AnalyzedItem],
+    language: str,
+) -> list[ServerMenuRow]:
     rows: list[ServerMenuRow] = []
+    fallback_ask = FALLBACK_ASK_VENDOR.get(language, FALLBACK_ASK_VENDOR["EN"])
     for item, analysis in zip(items, analyses):
         english = analysis.english.strip() or item.thai
         notes = list(analysis.cautionNotes or [])
+        # Always emit protein options as a stable English-prefixed token so the
+        # frontend parser can pull it back out into a structured field. The
+        # *protein names themselves* are already English keys (beef/pork/...).
         if item.proteinOptions:
             notes.insert(0, "Protein options: " + " / ".join(item.proteinOptions))
         rows.append(
@@ -290,7 +325,7 @@ def merge_to_rows(items: list[ExtractedItem], analyses: list[AnalyzedItem]) -> l
                 confidence=analysis.confidence,
                 likelyContains=list(analysis.likelyContains or []),
                 cautionNotes=notes[:4],
-                askVendor=analysis.askVendor or "Could you tell me what's in this dish?",
+                askVendor=analysis.askVendor or fallback_ask,
             )
         )
     return rows
@@ -322,7 +357,10 @@ async def health() -> dict:
 
 
 @app.post("/api/scan-menu", response_model=ScanResponse)
-async def scan_menu(file: UploadFile = File(...)) -> ScanResponse:
+async def scan_menu(
+    file: UploadFile = File(...),
+    language: str = Form(DEFAULT_LANG),
+) -> ScanResponse:
     if not OPENROUTER_API_KEY:
         raise HTTPException(status_code=503, detail="OPENROUTER_API_KEY is not configured on the server.")
 
@@ -335,20 +373,24 @@ async def scan_menu(file: UploadFile = File(...)) -> ScanResponse:
     if len(raw) > MAX_UPLOAD_BYTES:
         raise HTTPException(status_code=413, detail=f"Image is larger than {MAX_UPLOAD_BYTES // (1024*1024)} MB.")
 
+    lang = (language or DEFAULT_LANG).upper()
+    if lang not in LANG_NAMES:
+        lang = DEFAULT_LANG
+
     started = datetime.now()
 
     items, stage1_raw = await stage1_extract(raw, file.content_type)
     logger.info(
-        "stage1 done | model=%s | items=%d | bytes=%d | filename=%s",
-        OPENROUTER_VISION_MODEL, len(items), len(raw), file.filename,
+        "stage1 done | model=%s | items=%d | bytes=%d | lang=%s | filename=%s",
+        OPENROUTER_VISION_MODEL, len(items), len(raw), lang, file.filename,
     )
 
-    analyses, stage2_raw = await stage2_analyze(items)
-    logger.info("stage2 done | model=%s | analyses=%d", OPENROUTER_TEXT_MODEL, len(analyses))
+    analyses, stage2_raw = await stage2_analyze(items, lang)
+    logger.info("stage2 done | model=%s | analyses=%d | lang=%s", OPENROUTER_TEXT_MODEL, len(analyses), lang)
 
-    rows = merge_to_rows(items, analyses)
+    rows = merge_to_rows(items, analyses, lang)
     elapsed = (datetime.now() - started).total_seconds()
-    logger.info("scan-menu OK | rows=%d | elapsed=%.1fs", len(rows), elapsed)
+    logger.info("scan-menu OK | rows=%d | lang=%s | elapsed=%.1fs", len(rows), lang, elapsed)
 
     _persist_debug_dump(
         filename=file.filename or "upload",
