@@ -1,0 +1,53 @@
+
+> thai-safe-bite@0.1.0 dev
+> next dev -p 3000
+
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:3000
+
+ ✓ Starting...
+ ✓ Ready in 1800ms
+ ○ Compiling / ...
+ ✓ Compiled / in 4.3s (523 modules)
+ GET / 200 in 4556ms
+ GET / 200 in 50ms
+ GET / 200 in 46ms
+ GET / 200 in 86ms
+ ✓ Compiled /api/profile in 210ms (283 modules)
+ GET /api/profile 200 in 284ms
+ GET /api/profile 200 in 289ms
+ ✓ Compiled in 496ms (553 modules)
+ ✓ Compiled in 426ms (523 modules)
+ GET / 200 in 93ms
+ ✓ Compiled /api/profile in 114ms (283 modules)
+ GET /api/profile 200 in 180ms
+ GET /api/profile 200 in 186ms
+ ✓ Compiled in 406ms (553 modules)
+ ✓ Compiled in 254ms (553 modules)
+ ✓ Compiled in 351ms (553 modules)
+ ✓ Compiled in 526ms (523 modules)
+ ✓ Compiled in 696ms (523 modules)
+ ✓ Compiled in 392ms (523 modules)
+ ✓ Compiled in 413ms (523 modules)
+ ✓ Compiled in 294ms (523 modules)
+ ✓ Compiled in 360ms (523 modules)
+ ✓ Compiled in 327ms (523 modules)
+ ✓ Compiled in 345ms (523 modules)
+ ✓ Compiled in 421ms (523 modules)
+ ✓ Compiled in 366ms (523 modules)
+ ✓ Compiled in 307ms (523 modules)
+ ✓ Compiled in 213ms (523 modules)
+ ✓ Compiled in 215ms (523 modules)
+ ✓ Compiled in 184ms (523 modules)
+ ✓ Compiled in 337ms (523 modules)
+ GET / 200 in 165ms
+ ✓ Compiled /api/profile in 221ms (283 modules)
+ GET /api/profile 200 in 394ms
+ GET /api/profile 200 in 402ms
+ ✓ Compiled in 399ms (553 modules)
+ ✓ Compiled in 357ms (523 modules)
+ ✓ Compiled in 382ms (523 modules)
+ ✓ Compiled in 158ms (270 modules)
+ ✓ Compiled in 347ms (523 modules)
+ ✓ Compiled in 1262ms (523 modules)
+ ✓ Compiled in 320ms (270 modules)
