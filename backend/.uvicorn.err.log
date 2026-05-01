@@ -1,0 +1,9 @@
+INFO:     Started server process [34456]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+2026-05-01 19:01:45,460 INFO httpx HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-01 19:02:02,627 INFO kindee.scan stage1 done | model=google/gemma-3-27b-it | items=26 | bytes=2634834 | filename=dacb4af7134d4d99800fa02e8f91f1d4.png
+2026-05-01 19:02:04,307 INFO httpx HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-01 19:03:24,368 INFO kindee.scan stage2 done | model=google/gemma-3-27b-it | analyses=26
+2026-05-01 19:03:24,370 INFO kindee.scan scan-menu OK | rows=26 | elapsed=101.4s
