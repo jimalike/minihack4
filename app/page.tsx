@@ -223,6 +223,16 @@ const copy = {
     vendorContains: "Contains",
     vendorNo: "No",
     vendorNotSure: "Not sure",
+    pleaseAvoid: "Please avoid",
+    thisDishMayContain: "This dish may contain",
+    crossContactShort: "Please don't cook with shared tools or oil",
+    nothingToAvoid: "No personal restrictions selected.",
+    answeredOf: "answered",
+    allDone: "All questions answered",
+    restartQuestions: "Restart",
+    safeSummary: "Looks OK based on the vendor's answers",
+    riskySummary: "Avoid this dish — vendor confirmed risky ingredients",
+    riskyItemsLabel: "Vendor confirmed:",
   },
   TH: {
     intro: "มาช่วยกันเช็กก่อนทานนะคะ",
@@ -299,6 +309,16 @@ const copy = {
     vendorContains: "ใส่",
     vendorNo: "ไม่ใส่",
     vendorNotSure: "ไม่แน่ใจ",
+    pleaseAvoid: "กรุณาหลีกเลี่ยง",
+    thisDishMayContain: "เมนูนี้อาจมี",
+    crossContactShort: "ขอไม่ใช้อุปกรณ์/น้ำมันร่วมกันค่ะ",
+    nothingToAvoid: "ยังไม่ได้เลือกข้อจำกัด",
+    answeredOf: "ตอบแล้ว",
+    allDone: "ตอบครบทุกคำถาม",
+    restartQuestions: "เริ่มใหม่",
+    safeSummary: "ดูปลอดภัยตามคำตอบของแม่ค้า",
+    riskySummary: "ไม่ควรสั่ง — แม่ค้ายืนยันว่ามีส่วนผสมเสี่ยง",
+    riskyItemsLabel: "แม่ค้ายืนยันว่ามี:",
   },
   JP: {
     intro: "食べる前に一緒に確認しましょう。",
@@ -375,6 +395,16 @@ const copy = {
     vendorContains: "入っている",
     vendorNo: "入っていない",
     vendorNotSure: "わからない",
+    pleaseAvoid: "避けてください",
+    thisDishMayContain: "この料理に含まれる可能性",
+    crossContactShort: "調理器具・油を共有しないでください",
+    nothingToAvoid: "制限が選択されていません",
+    answeredOf: "回答済み",
+    allDone: "すべての質問に回答しました",
+    restartQuestions: "やり直す",
+    safeSummary: "店員の回答からは大丈夫そうです",
+    riskySummary: "この料理は避けてください — 危険な成分が確認されました",
+    riskyItemsLabel: "店員が確認した内容:",
   },
   CN: {
     intro: "吃之前我们一起确认。",
@@ -451,6 +481,16 @@ const copy = {
     vendorContains: "有",
     vendorNo: "没有",
     vendorNotSure: "不确定",
+    pleaseAvoid: "请避免",
+    thisDishMayContain: "这道菜可能含有",
+    crossContactShort: "请不要与含这些成分的菜共用厨具或油",
+    nothingToAvoid: "尚未选择限制",
+    answeredOf: "已回答",
+    allDone: "所有问题已回答",
+    restartQuestions: "重新开始",
+    safeSummary: "根据摊主的回答看起来还可以",
+    riskySummary: "请勿点这道菜 — 摊主确认含有风险成分",
+    riskyItemsLabel: "摊主确认含有:",
   },
   KR: {
     intro: "먹기 전에 함께 확인해요.",
@@ -1918,10 +1958,9 @@ function HomeScreen({
           <SectionTitle eyebrow="Menu scanner" title="Scan a menu or ask about a dish" />
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-3 gap-2 rounded-[1.25rem] bg-muted p-1">
+          <div className="grid grid-cols-2 gap-2 rounded-[1.25rem] bg-muted p-1">
             {[
               { id: "photo", label: tx(profile.language, "modeMenu"), icon: Camera },
-              { id: "voice", label: tx(profile.language, "modeVoice"), icon: Mic },
               { id: "type", label: tx(profile.language, "modeType"), icon: Search },
             ].map((item) => {
               const Icon = item.icon;
@@ -2032,18 +2071,6 @@ function HomeScreen({
               {menuScanRows.length ? (
                 <MenuCautionTable analyzeDish={analyzeDish} profile={profile} rows={menuScanRows} />
               ) : null}
-            </div>
-          ) : null}
-
-          {mode === "voice" ? (
-            <div className="rounded-[1.25rem] bg-muted p-4 text-center">
-              <Button className="w-full" onClick={startVoice} size="lg" variant={listening ? "secondary" : "default"}>
-                <AudioLines className="h-5 w-5" />
-                {listening ? "Listening..." : "Say a dish name"}
-              </Button>
-              <p className="mt-3 text-sm font-semibold text-muted-foreground">
-                Try “Pad Thai”, “Som Tum”, or “ต้มยำกุ้ง”.
-              </p>
             </div>
           ) : null}
 
@@ -2227,30 +2254,144 @@ function PhraseScreen({
   t: Record<string, string>;
   vendorQuestionIndex: number;
 }) {
-  const currentQuestion = VENDOR_QUESTIONS[vendorQuestionIndex % VENDOR_QUESTIONS.length];
+  const lang = profile.language;
+  const totalQuestions = VENDOR_QUESTIONS.length;
+  // answers[i] === "yes" → vendor confirmed risky thing IS in dish (bad).
+  // answers[i] === "no"  → vendor said it's NOT in dish (good).
+  const [answers, setAnswers] = useState<Array<"yes" | "no">>([]);
+  const answeredCount = Math.min(answers.length, totalQuestions);
+  const allAnswered = answeredCount >= totalQuestions;
+  const currentQuestion = VENDOR_QUESTIONS[Math.min(answeredCount, totalQuestions - 1)];
+  const progressPct = Math.round((answeredCount / totalQuestions) * 100);
+  const riskyAnswers = answers
+    .map((a, i) => (a === "yes" ? VENDOR_QUESTIONS[i] : null))
+    .filter((q): q is (typeof VENDOR_QUESTIONS)[number] => q !== null);
+
+  const recordAnswer = (a: "yes" | "no") => {
+    setAnswers((prev) => [...prev, a]);
+    setVendorQuestionIndex((i) => i + 1);
+  };
+  const restartAnswers = () => {
+    setAnswers([]);
+    setVendorQuestionIndex(0);
+  };
+
   const profileItems = [
-    ...profile.allergens.map((allergen) => `${allergenLabels[allergen].icon} ${allergenLabel(allergen, profile.language)}`),
-    ...profile.diets.map((diet) => `${dietLabels[diet].icon} ${dietLabel(diet, profile.language)}`),
+    ...profile.allergens.map((allergen) => `${allergenLabels[allergen].icon} ${allergenLabel(allergen, lang)}`),
+    ...profile.diets.map((diet) => `${dietLabels[diet].icon} ${dietLabel(diet, lang)}`),
   ];
+
+  // Personalised "avoid" rows — Thai (for vendor) + user-language gloss.
+  const avoidRows = [
+    ...profile.allergens.map((a) => ({
+      key: `allergen-${a}`,
+      icon: allergenLabels[a].icon,
+      thai: allergenLabel(a, "TH"),
+      gloss: allergenLabel(a, lang),
+      tone: "rose" as const,
+    })),
+    ...profile.diets.map((d) => ({
+      key: `diet-${d}`,
+      icon: dietLabels[d].icon,
+      thai: dietLabel(d, "TH"),
+      gloss: dietLabel(d, lang),
+      tone: "amber" as const,
+    })),
+  ];
+
+  // Dish-specific risky ingredients (intersection of dish.commonlyContains × profile flags).
+  const riskyIngredients = Array.from(
+    new Set(
+      dish.commonlyContains
+        .filter((ing) => ing.flags.some((f) => [...profile.allergens, ...profile.diets].includes(f as never)))
+        .map((ing) => ing.label),
+    ),
+  ).map((label) => ({ key: label, thai: INGREDIENT_TH[label] ?? label, gloss: label }));
 
   return (
     <>
       <Card className="contrast-panel overflow-hidden">
         <CardHeader className="bg-primary text-white">
-          <p className="text-sm font-bold uppercase tracking-[0.14em] text-white/75">{t.phrase}</p>
-          <h1 className="text-3xl font-black leading-tight">{t.showThisToVendor ?? "Show this to the vendor"}</h1>
-          <p className="font-semibold text-white/80">
-            {dish.english} · {dish.thai}
-          </p>
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-white/70">{t.phrase}</p>
+          <h2 className="mt-1 text-base font-semibold text-white/80">{t.showThisToVendor ?? "Show this to the vendor"}</h2>
+          <h1 className="mt-3 text-4xl font-black leading-tight tracking-tight">{dish.thai}</h1>
+          <p className="mt-1 text-lg font-bold text-white/90">{dish.english}</p>
         </CardHeader>
         <CardContent className="space-y-5 pt-5">
-          <div className="rounded-[1.25rem] border-2 border-primary bg-white p-5 text-center">
-            <p className="text-2xl font-bold leading-relaxed text-foreground whitespace-pre-line text-left">{phrase}</p>
+          <p className="text-2xl font-bold text-foreground">สวัสดีค่ะ 🙏</p>
+
+          {/* Personalised AVOID block */}
+          <div className="rounded-[1.25rem] border-2 border-rose-300 bg-rose-50 p-4">
+            <div className="mb-3 flex items-center gap-2 text-rose-900">
+              <span className="text-2xl">🚫</span>
+              <div>
+                <p className="text-xl font-black leading-tight">กรุณาหลีกเลี่ยง</p>
+                <p className="text-xs font-bold uppercase tracking-wider opacity-70">
+                  {tx(lang, "pleaseAvoid")}
+                </p>
+              </div>
+            </div>
+            {avoidRows.length ? (
+              <ul className="space-y-2">
+                {avoidRows.map((row) => (
+                  <li
+                    key={row.key}
+                    className={cn(
+                      "flex items-center gap-3 rounded-2xl bg-white p-3 border",
+                      row.tone === "rose" ? "border-rose-200" : "border-amber-200",
+                    )}
+                  >
+                    <span className="text-3xl shrink-0">{row.icon}</span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xl font-black leading-tight text-foreground">{row.thai}</p>
+                      {row.gloss && row.gloss !== row.thai ? (
+                        <p className="text-xs font-semibold text-muted-foreground mt-0.5">{row.gloss}</p>
+                      ) : null}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm font-semibold text-muted-foreground">{tx(lang, "nothingToAvoid")}</p>
+            )}
           </div>
+
+          {/* Dish-specific risky ingredients block */}
+          {riskyIngredients.length ? (
+            <div className="rounded-[1.25rem] border-2 border-amber-300 bg-amber-50 p-4">
+              <div className="mb-3 flex items-center gap-2 text-amber-900">
+                <span className="text-2xl">⚠️</span>
+                <div>
+                  <p className="text-xl font-black leading-tight">เมนูนี้อาจมี</p>
+                  <p className="text-xs font-bold uppercase tracking-wider opacity-70">
+                    {tx(lang, "thisDishMayContain")}
+                  </p>
+                </div>
+              </div>
+              <ul className="grid grid-cols-2 gap-2">
+                {riskyIngredients.map((ing) => (
+                  <li
+                    key={ing.key}
+                    className="rounded-xl bg-white border border-amber-200 px-3 py-2"
+                  >
+                    <p className="text-base font-black leading-tight text-foreground">{ing.thai}</p>
+                    {ing.gloss && ing.gloss !== ing.thai ? (
+                      <p className="text-xs font-semibold text-muted-foreground mt-0.5">{ing.gloss}</p>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
+          {/* Polite cross-contact ask */}
           <div className="rounded-[1.25rem] bg-muted p-4">
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">{t.romanizedMeaning ?? "Romanized meaning"}</p>
-            <p className="mt-2 text-base font-semibold leading-relaxed whitespace-pre-line">{romanizedPhrase}</p>
+            <p className="text-base font-bold leading-relaxed text-foreground">ขอไม่ใช้อุปกรณ์/น้ำมันร่วมกันค่ะ 🙏</p>
+            <p className="mt-1 text-xs font-semibold leading-relaxed text-muted-foreground">
+              {tx(lang, "crossContactShort")}
+            </p>
           </div>
+
           <Button className="w-full" onClick={() => speakThai(phrase)} size="lg">
             <Volume2 className="h-5 w-5" />
             {t.playAudio ?? "Play polite Thai audio"}
@@ -2260,23 +2401,120 @@ function PhraseScreen({
 
       <Card className="contrast-panel">
         <CardHeader>
-          <SectionTitle eyebrow={tx(profile.language, "showVendor")} title={t.vendor} />
+          <SectionTitle eyebrow={tx(lang, "showVendor")} title={t.vendor} />
         </CardHeader>
         <CardContent className="space-y-4">
-          <button
-            className="min-h-48 w-full rounded-[1.25rem] bg-primary p-5 text-center text-white shadow-lift transition active:scale-[0.99]"
-            onClick={() => setVendorQuestionIndex((index) => index + 1)}
-            type="button"
-          >
-            <p className="text-3xl font-black leading-snug">{currentQuestion.thai}</p>
-            <p className="mt-3 text-base font-semibold text-white/80">{currentQuestion.en}</p>
-            <p className="mt-4 text-sm font-bold text-white/70">{tx(profile.language, "tapToFlip")}</p>
-          </button>
-          <div className="grid grid-cols-3 gap-2">
-            <VendorAnswer icon={<Check className="h-5 w-5" />} label="ใส่" sub={tx(profile.language, "vendorContains")} />
-            <VendorAnswer icon={<X className="h-5 w-5" />} label="ไม่ใส่" sub={tx(profile.language, "vendorNo")} />
-            <VendorAnswer icon={<CircleHelp className="h-5 w-5" />} label="ไม่แน่ใจ" sub={tx(profile.language, "vendorNotSure")} />
+          {/* Dish badge — vendor needs to know which dish these questions are about */}
+          <div className="rounded-2xl border-2 border-primary/40 bg-primary/5 p-4">
+            <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
+              {tx(lang, "colMenuItem")}
+            </p>
+            <p className="mt-1 text-2xl font-black leading-tight text-foreground">{dish.thai}</p>
+            <p className="text-sm font-bold text-muted-foreground">{dish.english}</p>
           </div>
+
+          {/* Progress tracker — dots colored by answer */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs font-bold text-muted-foreground">
+              <span>
+                {answeredCount} / {totalQuestions} {tx(lang, "answeredOf")}
+              </span>
+              <div className="flex gap-1.5">
+                {Array.from({ length: totalQuestions }).map((_, i) => {
+                  const a = answers[i];
+                  return (
+                    <span
+                      key={i}
+                      className={cn(
+                        "h-2.5 w-2.5 rounded-full transition",
+                        a === "yes"
+                          ? "bg-rose-500"
+                          : a === "no"
+                            ? "bg-emerald-500"
+                            : i === answeredCount && !allAnswered
+                              ? "bg-primary ring-2 ring-primary/30"
+                              : "bg-muted",
+                      )}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+            <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+              <div
+                className={cn(
+                  "h-full transition-all duration-300",
+                  riskyAnswers.length ? "bg-rose-500" : "bg-emerald-500",
+                )}
+                style={{ width: `${progressPct}%` }}
+              />
+            </div>
+          </div>
+
+          {allAnswered ? (
+            riskyAnswers.length ? (
+              <div className="rounded-[1.25rem] border-2 border-rose-300 bg-rose-50 p-6 text-center">
+                <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-rose-500 text-white">
+                  <X className="h-8 w-8" strokeWidth={3} />
+                </div>
+                <p className="mt-3 text-xl font-black text-rose-900">
+                  {tx(lang, "riskySummary")}
+                </p>
+                <p className="mt-3 text-xs font-bold uppercase tracking-wider text-rose-800/70">
+                  {tx(lang, "riskyItemsLabel")}
+                </p>
+                <ul className="mt-2 space-y-1 text-left">
+                  {riskyAnswers.map((q) => (
+                    <li
+                      key={q.thai}
+                      className="rounded-lg bg-white border border-rose-200 px-3 py-2 text-sm font-bold text-rose-900"
+                    >
+                      <span className="block">{q.thai}</span>
+                      <span className="block text-xs font-semibold text-rose-700/80">{q.en}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Button className="mt-4" onClick={restartAnswers} size="lg" variant="outline">
+                  {tx(lang, "restartQuestions")}
+                </Button>
+              </div>
+            ) : (
+              <div className="rounded-[1.25rem] border-2 border-emerald-300 bg-emerald-50 p-6 text-center">
+                <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-emerald-500 text-white">
+                  <Check className="h-8 w-8" strokeWidth={3} />
+                </div>
+                <p className="mt-3 text-xl font-black text-emerald-900">
+                  {tx(lang, "safeSummary")} ✓
+                </p>
+                <Button className="mt-4" onClick={restartAnswers} size="lg" variant="outline">
+                  {tx(lang, "restartQuestions")}
+                </Button>
+              </div>
+            )
+          ) : (
+            <>
+              <div className="min-h-48 w-full rounded-[1.25rem] bg-primary p-5 text-center text-white shadow-lift">
+                <p className="text-3xl font-black leading-snug">{currentQuestion.thai}</p>
+                <p className="mt-3 text-base font-semibold text-white/80">{currentQuestion.en}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <VendorAnswer
+                  icon={<Check className="h-7 w-7" strokeWidth={3} />}
+                  label="ใส่"
+                  sub={tx(lang, "vendorContains")}
+                  tone="yes"
+                  onClick={() => recordAnswer("yes")}
+                />
+                <VendorAnswer
+                  icon={<X className="h-7 w-7" strokeWidth={3} />}
+                  label="ไม่ใส่"
+                  sub={tx(lang, "vendorNo")}
+                  tone="no"
+                  onClick={() => recordAnswer("no")}
+                />
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
 
@@ -2514,19 +2752,33 @@ function VendorAnswer({
   icon,
   label,
   sub,
+  tone,
+  onClick,
 }: {
   icon: React.ReactNode;
   label: string;
   sub: string;
+  tone: "yes" | "no";
+  onClick: () => void;
 }) {
+  const toneStyles =
+    tone === "yes"
+      ? "bg-emerald-500 text-white border-emerald-600 hover:bg-emerald-600"
+      : "bg-rose-500 text-white border-rose-600 hover:bg-rose-600";
   return (
     <button
-      className="min-h-24 rounded-2xl border border-border bg-white p-3 text-center shadow-sm transition active:scale-[0.98]"
+      className={cn(
+        "min-h-28 rounded-2xl border-2 p-4 text-center shadow-lift transition active:scale-[0.98]",
+        toneStyles,
+      )}
+      onClick={onClick}
       type="button"
     >
-      <span className="mx-auto grid h-9 w-9 place-items-center rounded-full bg-muted text-secondary">{icon}</span>
-      <span className="mt-2 block text-lg font-black">{label}</span>
-      <span className="block text-xs font-bold text-muted-foreground">{sub}</span>
+      <span className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-white/25 text-white">
+        {icon}
+      </span>
+      <span className="mt-2 block text-xl font-black">{label}</span>
+      <span className="block text-xs font-bold opacity-90">{sub}</span>
     </button>
   );
 }
