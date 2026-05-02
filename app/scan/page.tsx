@@ -5,11 +5,11 @@ import {
   AudioLines,
   Camera,
   Check,
+  ChevronDown,
   ChevronLeft,
   CircleHelp,
   Languages,
   Mic,
-  MoonStar,
   Search,
   ShieldCheck,
   Sparkles,
@@ -135,6 +135,30 @@ const languageNames: Record<Lang, string> = {
   CN: "中文",
   KR: "한국어",
   AR: "العربية",
+};
+
+const LANG_FLAGS: Record<Lang, string> = {
+  EN: "🇬🇧",
+  TH: "🇹🇭",
+  JP: "🇯🇵",
+  CN: "🇨🇳",
+  KR: "🇰🇷",
+  AR: "🇸🇦",
+};
+
+const SIGN_IN_LABEL: Record<Lang, string> = {
+  EN: "Sign in",
+  TH: "เข้าสู่ระบบ",
+  JP: "ログイン",
+  CN: "登录",
+  KR: "로그인",
+  AR: "تسجيل الدخول",
+};
+
+const TOP_NAV_LABELS: Record<"scanner" | "persona" | "phrase", Record<Lang, string>> = {
+  scanner: { EN: "Scanner",     TH: "สแกนเนอร์",  JP: "スキャナー",   CN: "扫描器", KR: "스캐너",   AR: "ماسح" },
+  persona: { EN: "Persona",     TH: "โปรไฟล์",    JP: "プロフィール", CN: "档案",   KR: "프로필",   AR: "ملف" },
+  phrase:  { EN: "Phrase Card", TH: "การ์ดประโยค", JP: "フレーズカード", CN: "短语卡", KR: "문장 카드", AR: "بطاقة" },
 };
 
 // Master list of i18n keys. EN is the source of truth for shape; other languages
@@ -1494,8 +1518,20 @@ export default function Home() {
   const [listening, setListening] = useState(false);
   const [result, setResult] = useState<AnalysisResult>(() => scoreDish(dishes[0], defaultProfile));
   const [vendorQuestionIndex, setVendorQuestionIndex] = useState(0);
+  const [langOpen, setLangOpen] = useState(false);
+  const langRef = useRef<HTMLDivElement>(null);
 
   const t = copy[profile.language];
+
+  // Close language dropdown on outside click
+  useEffect(() => {
+    if (!langOpen) return;
+    const onClick = (e: MouseEvent) => {
+      if (!langRef.current?.contains(e.target as Node)) setLangOpen(false);
+    };
+    window.addEventListener("mousedown", onClick);
+    return () => window.removeEventListener("mousedown", onClick);
+  }, [langOpen]);
   const suggestions = useMemo(() => {
     const clean = query.trim().toLowerCase();
     if (!clean) return dishes.slice(0, 6);
@@ -1558,7 +1594,6 @@ export default function Home() {
     if (profileReady) {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
     }
-    document.documentElement.classList.toggle("high-contrast", profile.highContrast);
     setResult((current) => scoreDish(current.dish, profile));
   }, [profile, profileReady]);
 
@@ -1625,62 +1660,102 @@ export default function Home() {
     <main className="min-h-screen w-full pb-28 text-foreground">
       <header className="sticky top-0 z-30 border-b border-border bg-white/95 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
-          <button
-            aria-label="Go home"
-            className="flex min-h-12 items-center gap-3 rounded-2xl text-left"
-            onClick={() => setScreen("home")}
-            type="button"
+          <a
+            aria-label="Back to kindee landing"
+            className="flex items-center gap-3"
+            href="/"
           >
             <span className="brand-mark shrink-0" aria-hidden="true">
               <span />
             </span>
-            <span>
-              <span className="block text-2xl font-black leading-none tracking-tight">ThaiSafeBite</span>
-              <span className="hidden text-xs font-semibold text-muted-foreground sm:block">{t.intro}</span>
+            <span className="text-2xl font-black leading-none tracking-tight text-secondary">
+              kindee
             </span>
-          </button>
-          <nav aria-label="Primary" className="hidden items-center gap-8 text-sm font-bold text-muted-foreground md:flex">
-            <button className="transition hover:text-primary" onClick={() => setScreen("home")} type="button">
-              Home
-            </button>
+          </a>
+
+          {/* In-app nav: Scanner / Persona / Phrase Card */}
+          <nav
+            aria-label="Scanner sections"
+            className="hidden md:flex items-center gap-1 rounded-full p-1 bg-secondary/5 border border-border"
+          >
             <button
-              className="transition hover:text-primary"
-              onClick={() => {
-                setScreen("home");
-                setMode("photo");
-              }}
               type="button"
+              onClick={() => setScreen("home")}
+              className={cn(
+                "text-sm font-bold transition px-3.5 py-1.5 rounded-full",
+                screen === "home"
+                  ? "bg-white text-primary shadow-sm"
+                  : "text-secondary/70 hover:text-secondary hover:bg-secondary/10",
+              )}
             >
-              Scanner
+              {TOP_NAV_LABELS.scanner[profile.language] ?? TOP_NAV_LABELS.scanner.EN}
             </button>
-            <button className="transition hover:text-primary" onClick={() => setScreen("phrase")} type="button">
-              Phrase Card
-            </button>
-            <button className="transition hover:text-primary" onClick={() => setScreen("result")} type="button">
-              AI Assistant
+            <a
+              href="/persona"
+              className="text-sm font-bold transition px-3.5 py-1.5 rounded-full text-secondary/70 hover:text-secondary hover:bg-secondary/10"
+            >
+              {TOP_NAV_LABELS.persona[profile.language] ?? TOP_NAV_LABELS.persona.EN}
+            </a>
+            <button
+              type="button"
+              onClick={() => setScreen("phrase")}
+              className={cn(
+                "text-sm font-bold transition px-3.5 py-1.5 rounded-full",
+                screen === "phrase"
+                  ? "bg-white text-primary shadow-sm"
+                  : "text-secondary/70 hover:text-secondary hover:bg-secondary/10",
+              )}
+            >
+              {TOP_NAV_LABELS.phrase[profile.language] ?? TOP_NAV_LABELS.phrase.EN}
             </button>
           </nav>
-          <div className="flex gap-2">
-            <button
-              aria-label="Toggle high contrast"
-              className={cn("grid h-12 w-12 place-items-center rounded-full border border-border bg-white text-secondary shadow-sm", profile.highContrast && "border-foreground bg-foreground text-white")}
-              onClick={() => setProfile((current) => ({ ...current, highContrast: !current.highContrast }))}
-              type="button"
+
+          <div className="flex items-center gap-2 sm:gap-3">
+            <a
+              href="/login"
+              className="hidden sm:inline-flex items-center text-sm font-bold text-secondary/80 hover:text-secondary transition px-3 py-2 rounded-full hover:bg-secondary/5"
             >
-              <MoonStar className="h-5 w-5" />
-            </button>
-            <select
-              aria-label="Language"
-              className="h-12 rounded-full border border-border bg-white px-3 text-sm font-bold text-foreground shadow-sm"
-              onChange={(event) => setProfile((current) => ({ ...current, language: event.target.value as Lang }))}
-              value={profile.language}
-            >
-              {Object.keys(languageNames).map((lang) => (
-                <option key={lang} value={lang}>
-                  {lang}
-                </option>
-              ))}
-            </select>
+              {SIGN_IN_LABEL[profile.language] ?? SIGN_IN_LABEL.EN}
+            </a>
+
+            <div className="relative" ref={langRef}>
+              <button
+                type="button"
+                onClick={() => setLangOpen(!langOpen)}
+                className="inline-flex items-center gap-1.5 px-3 h-9 rounded-full text-xs font-bold transition border bg-white text-secondary border-border hover:bg-muted shadow-sm"
+                aria-label="Language"
+              >
+                <Languages size={13} />
+                <span>{profile.language}</span>
+                <ChevronDown size={12} />
+              </button>
+              {langOpen ? (
+                <div className="absolute right-0 mt-2 w-44 rounded-2xl border border-border bg-white shadow-lift overflow-hidden z-50">
+                  {(Object.keys(languageNames) as Lang[]).map((l) => (
+                    <button
+                      key={l}
+                      type="button"
+                      onClick={() => {
+                        setProfile((p) => ({ ...p, language: l }));
+                        setLangOpen(false);
+                      }}
+                      className={cn(
+                        "flex w-full items-center gap-2 px-3 py-2.5 text-sm font-semibold transition text-left",
+                        l === profile.language
+                          ? "bg-primary/10 text-primary"
+                          : "text-secondary hover:bg-muted",
+                      )}
+                    >
+                      <span>{LANG_FLAGS[l]}</span>
+                      <span>{languageNames[l]}</span>
+                      {l === profile.language ? (
+                        <span className="ml-auto text-xs">✓</span>
+                      ) : null}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
           </div>
         </div>
       </header>
@@ -1786,6 +1861,15 @@ function HomeScreen({
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [scanningFrame, setScanningFrame] = useState(false);
   const [menuScanRows, setMenuScanRows] = useState<MenuCautionRow[]>([]);
+
+  // ?sample=1 → auto-load the sample menu (used by landing-page "View sample scan" CTA).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("sample") === "1") {
+      setMenuScanRows(sampleMenuRows);
+    }
+  }, []);
 
   const openMenuUpload = () => {
     setUploadError("");
@@ -1910,7 +1994,7 @@ function HomeScreen({
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1.18fr_0.82fr] lg:items-start">
-      <Card className="contrast-panel order-2 overflow-hidden lg:order-2">
+      <Card id="persona-card" className="contrast-panel order-2 overflow-hidden lg:order-2 scroll-mt-24">
         <CardHeader className="bg-white">
           <div className="flex items-start justify-between gap-3">
             <div>
