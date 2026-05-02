@@ -30,6 +30,8 @@ from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, ValidationError
 
+import retrieval
+
 load_dotenv()
 
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "").strip()
@@ -121,6 +123,32 @@ class ScanResponse(BaseModel):
     rows: list[ServerMenuRow]
 
 
+class AnalyzeDishRequest(BaseModel):
+    thai: str
+    language: str = DEFAULT_LANG
+    proteinOptions: list[str] = Field(default_factory=list)
+    price: str = ""
+
+
+class SearchRequest(BaseModel):
+    query: str
+    k: int = Field(default=5, ge=1, le=20)
+    mode: Literal["bm25", "vector", "hybrid"] = "hybrid"
+
+
+class SearchHit(BaseModel):
+    recipe_id: int
+    name: str
+    kind: str
+    content: str
+    score: float
+
+
+class SearchResponse(BaseModel):
+    mode: Literal["bm25", "vector", "hybrid"]
+    hits: list[SearchHit]
+
+
 # ---------------------------------------------------------------------------
 # Prompts
 # ---------------------------------------------------------------------------
@@ -155,16 +183,28 @@ Hard rules:
 STAGE2_SYSTEM = (
     "You are a Thai food allergen analyst helping foreign travelers. Given a list "
     "of Thai dish names, produce a structured allergen / caution analysis for "
-    "each dish using your knowledge of typical Thai street food recipes. Output "
-    "STRICT JSON only — no prose, no markdown fences."
+    "each dish using your knowledge of typical Thai street food recipes. "
+    "When a 'Reference recipe' is provided for a dish, prefer its ingredient list "
+    "over your prior knowledge and you may mark `confidence: High` if the reference "
+    "clearly matches the dish. Output STRICT JSON only — no prose, no markdown fences."
 )
 
 
-def build_stage2_user_prompt(items: list[ExtractedItem], language: str) -> str:
-    listing = "\n".join(
-        f"{i + 1}. thai={item.thai!r} proteinOptions={item.proteinOptions} price={item.price!r}"
-        for i, item in enumerate(items)
-    )
+def build_stage2_user_prompt(
+    items: list[ExtractedItem],
+    language: str,
+    contexts: list[str] | None = None,
+) -> str:
+    contexts = contexts or [""] * len(items)
+    lines: list[str] = []
+    for i, item in enumerate(items):
+        lines.append(
+            f"{i + 1}. thai={item.thai!r} proteinOptions={item.proteinOptions} price={item.price!r}"
+        )
+        ctx = contexts[i] if i < len(contexts) else ""
+        if ctx:
+            lines.append(f"   Reference recipe (from Thai cookbook): {ctx}")
+    listing = "\n".join(lines)
     lang_name = LANG_NAMES.get(language, "English")
     return f"""Below is a list of {len(items)} Thai dishes transcribed from a street-food menu.
 For EACH dish (in order, same length, do NOT skip), produce an analysis object.
@@ -280,12 +320,43 @@ async def stage1_extract(image_bytes: bytes, mime: str) -> tuple[list[ExtractedI
     return items, raw
 
 
+RAG_CONTEXT_CHARS = 400
+
+
+def _format_rag_context(hits: list[retrieval.Hit]) -> str:
+    """One short line per dish — enough to ground Stage 2 without bloating the prompt."""
+    if not hits:
+        return ""
+    top = hits[0]
+    excerpt = top.content.strip().replace("\n", " ")
+    if len(excerpt) > RAG_CONTEXT_CHARS:
+        excerpt = excerpt[:RAG_CONTEXT_CHARS].rstrip() + "…"
+    return f"{top.recipe_name} — {excerpt}"
+
+
+async def _retrieve_contexts(items: list[ExtractedItem]) -> list[str]:
+    """For each item, run a hybrid search and format the top hit as context.
+    Failures degrade silently to '' so Stage 2 still runs."""
+    async def one(item: ExtractedItem) -> str:
+        try:
+            hits = await retrieval.hybrid_search(item.thai, k=1)
+        except Exception:
+            logger.exception("RAG retrieval failed for %r", item.thai)
+            return ""
+        return _format_rag_context(hits)
+
+    return await asyncio.gather(*(one(it) for it in items))
+
+
 async def stage2_analyze(items: list[ExtractedItem], language: str) -> tuple[list[AnalyzedItem], str]:
     if not items:
         return [], ""
+    contexts = await _retrieve_contexts(items)
+    used = sum(1 for c in contexts if c)
+    logger.info("RAG retrieval | items=%d | with_context=%d", len(items), used)
     messages = [
         {"role": "system", "content": STAGE2_SYSTEM},
-        {"role": "user", "content": build_stage2_user_prompt(items, language)},
+        {"role": "user", "content": build_stage2_user_prompt(items, language, contexts)},
     ]
     raw = await _call_openrouter(model=OPENROUTER_TEXT_MODEL, messages=messages)
     parsed = _parse_model_json(raw) or {}
@@ -402,6 +473,50 @@ async def scan_menu(
     )
 
     return ScanResponse(rows=rows)
+
+
+@app.post("/api/analyze-dish", response_model=ServerMenuRow)
+async def analyze_dish(req: AnalyzeDishRequest) -> ServerMenuRow:
+    """Single-dish version of /api/scan-menu's Stage 2: takes a Thai dish name,
+    runs hybrid retrieval to ground the LLM in a real recipe, and returns one
+    ServerMenuRow. Used by the type-mode search bar in the frontend when the
+    typed query doesn't match any dish in the local hardcoded list."""
+    if not OPENROUTER_API_KEY:
+        raise HTTPException(status_code=503, detail="OPENROUTER_API_KEY is not configured on the server.")
+
+    thai = (req.thai or "").strip()
+    if not thai:
+        raise HTTPException(status_code=400, detail="thai is required")
+
+    lang = (req.language or DEFAULT_LANG).upper()
+    if lang not in LANG_NAMES:
+        lang = DEFAULT_LANG
+
+    items = [ExtractedItem(thai=thai, proteinOptions=req.proteinOptions, price=req.price)]
+    analyses, _ = await stage2_analyze(items, lang)
+    rows = merge_to_rows(items, analyses, lang)
+    if not rows:
+        raise HTTPException(status_code=502, detail="Analysis returned no rows.")
+    return rows[0]
+
+
+@app.post("/api/search", response_model=SearchResponse)
+async def search(req: SearchRequest) -> SearchResponse:
+    query = (req.query or "").strip()
+    if not query:
+        raise HTTPException(status_code=400, detail="query is required")
+
+    if req.mode == "bm25":
+        hits = retrieval.bm25_search(query, k=req.k)
+    elif req.mode == "vector":
+        hits = await retrieval.vector_search(query, k=req.k)
+    else:
+        hits = await retrieval.hybrid_search(query, k=req.k)
+
+    return SearchResponse(
+        mode=req.mode,
+        hits=[SearchHit(**h.to_dict()) for h in hits],
+    )
 
 
 # ---------------------------------------------------------------------------

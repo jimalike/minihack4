@@ -1520,6 +1520,8 @@ export default function Home() {
   const [vendorQuestionIndex, setVendorQuestionIndex] = useState(0);
   const [langOpen, setLangOpen] = useState(false);
   const langRef = useRef<HTMLDivElement>(null);
+  const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState("");
 
   const t = copy[profile.language];
 
@@ -1615,7 +1617,49 @@ export default function Home() {
     setVendorQuestionIndex(0);
   };
 
-  const analyzeText = () => analyzeDish(findDish(query));
+  // Strategy C (hybrid): try the hardcoded 13-dish list first (free, instant);
+  // if no match, fall back to the backend KB which retrieves a real recipe and
+  // runs Stage 2 LLM analysis on it.
+  const analyzeText = async () => {
+    const trimmed = query.trim();
+    if (!trimmed || searching) return;
+
+    const local = findDishStrict(trimmed);
+    if (local) {
+      setSearchError("");
+      analyzeDish(local);
+      return;
+    }
+
+    setSearching(true);
+    setSearchError("");
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+      const resp = await fetch(`${backendUrl}/api/analyze-dish`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ thai: trimmed, language: profile.language }),
+      });
+      if (!resp.ok) {
+        const text = await resp.text().catch(() => "");
+        let detail = text;
+        try { detail = JSON.parse(text).detail ?? text; } catch { /* not JSON */ }
+        setSearchError(`${tx(profile.language, "scanFailed")} (${resp.status}). ${detail || tx(profile.language, "tryAgain")}`);
+        return;
+      }
+      const row: ServerMenuRow = await resp.json();
+      const mapped = mapServerRow(row, 0);
+      if (!mapped) {
+        setSearchError(tx(profile.language, "tryAgain"));
+        return;
+      }
+      analyzeDish(syntheticDishFromRow(mapped));
+    } catch {
+      setSearchError(tx(profile.language, "tryAgain"));
+    } finally {
+      setSearching(false);
+    }
+  };
 
   const startVoice = () => {
     const speechWindow = window as unknown as WindowWithSpeechRecognition;
@@ -1778,6 +1822,8 @@ export default function Home() {
             profileLoadState={profileLoadState}
             profileName={profileName}
             query={query}
+            searching={searching}
+            searchError={searchError}
             setMode={setMode}
             setProfile={setProfile}
             setQuery={setQuery}
@@ -1833,6 +1879,8 @@ function HomeScreen({
   profileLoadState,
   profileName,
   query,
+  searching,
+  searchError,
   setMode,
   setProfile,
   setQuery,
@@ -1847,6 +1895,8 @@ function HomeScreen({
   profileLoadState: ProfileLoadState;
   profileName: string;
   query: string;
+  searching: boolean;
+  searchError: string;
   setMode: (mode: Mode) => void;
   setProfile: React.Dispatch<React.SetStateAction<Profile>>;
   setQuery: (query: string) => void;
@@ -2165,14 +2215,18 @@ function HomeScreen({
                 <input
                   className="h-14 w-full rounded-[1.25rem] border border-border bg-white pl-12 pr-4 text-lg font-bold outline-none focus:border-primary focus:ring-4 focus:ring-primary/15"
                   onChange={(event) => setQuery(event.target.value)}
+                  onKeyDown={(event) => { if (event.key === "Enter") analyzeText(); }}
                   placeholder="Pad Thai, ส้มตำ, Khao Soi..."
                   value={query}
                 />
               </label>
-              <Button className="w-full" onClick={analyzeText} size="lg">
+              <Button className="w-full" disabled={searching} onClick={analyzeText} size="lg">
                 <Sparkles className="h-5 w-5" />
-                Estimate risk
+                {searching ? "Searching knowledge base…" : "Estimate risk"}
               </Button>
+              {searchError ? (
+                <p className="text-sm font-bold text-destructive">{searchError}</p>
+              ) : null}
             </div>
           ) : null}
 
