@@ -179,7 +179,7 @@ function Navbar({
             <Activity size={18} />
           </div>
           <div>
-            <p className="text-sm font-black uppercase tracking-[0.18em] text-teal-600">AI Rehab</p>
+            <p className="text-sm font-black uppercase tracking-[0.18em] text-teal-600">ERGO AGENT</p>
             <p className="text-sm font-bold text-slate-800">{t(lang, "brand")}</p>
           </div>
         </a>
