@@ -1,7 +1,6 @@
 "use client";
 
 import { AlertCircle, ArrowLeft, Camera, Check, Info, RotateCcw } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -9,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { type DemoLang, loadDemoLang, saveDemoLang } from "@/lib/demo-language";
 
 const STORAGE_KEY = "office-relief-body-map";
+const AGENT_URL = "https://desktop-25ct16q.tail09f6e0.ts.net/";
 
 type BodyZoneId =
   | "front-shoulder-left"
@@ -122,7 +122,6 @@ const copy = {
 } as const;
 
 export default function BodyMapPage() {
-  const router = useRouter();
   const [lang, setLang] = useState<DemoLang>("TH");
   const [selected, setSelected] = useState<BodyZoneId[]>([]);
   const [hovered, setHovered] = useState<BodyZoneId | null>(null);
@@ -169,7 +168,12 @@ export default function BodyMapPage() {
 
   const saveAndContinue = () => {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(selected));
-    router.push("/result");
+    window.location.href = AGENT_URL;
+  };
+
+  const saveAndViewResult = () => {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(selected));
+    window.location.href = "/result";
   };
 
   const clearSelection = () => {
@@ -249,6 +253,15 @@ export default function BodyMapPage() {
                 <Button className="h-12 rounded-2xl bg-teal-600 px-6 hover:bg-teal-700" onClick={saveSelection} type="button">
                   <Check size={16} />
                   {t.save}
+                </Button>
+                <Button
+                  className="h-12 rounded-2xl bg-cyan-600 px-6 hover:bg-cyan-700"
+                  disabled={!selected.length}
+                  onClick={saveAndViewResult}
+                  type="button"
+                >
+                  <Camera size={16} />
+                  {lang === "TH" ? "ไปหน้าผลวินิจฉัย" : "Go to result page"}
                 </Button>
                 <Button
                   className="h-12 rounded-2xl bg-slate-900 px-6 hover:bg-slate-800"
