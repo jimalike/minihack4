@@ -3,12 +3,12 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "ThaiSafeBite",
-  description: "AI-powered street food safety companion for Thailand travelers.",
+  title: "Office Relief AI",
+  description: "Preliminary office syndrome screening and rehabilitation demo.",
 };
 
 export const viewport: Viewport = {
-  themeColor: "#FFF8F0",
+  themeColor: "#f5fbfb",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,

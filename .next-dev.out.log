@@ -388,3 +388,11 @@
  ✓ Compiled in 322ms (576 modules)
  GET /result 200 in 100ms
  GET /body-map 200 in 43ms
+ ✓ Compiled in 558ms (576 modules)
+ ✓ Compiled in 560ms (568 modules)
+ ✓ Compiled in 506ms (554 modules)
+ GET /result 200 in 87ms
+ ✓ Compiled /camera in 382ms (560 modules)
+ GET /camera 200 in 520ms
+ ✓ Compiled in 499ms (574 modules)
+ GET /result 200 in 119ms

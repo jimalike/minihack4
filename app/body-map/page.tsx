@@ -87,7 +87,6 @@ const copy = {
     saveNext: "ส่งไปยังเอเจนท์น้องจิมใจดี",
     clear: "ล้างทั้งหมด",
     saved: "บันทึกตำแหน่งที่ปวดเรียบร้อยแล้ว",
-    agentSaved: "บันทึกข้อมูลเพื่อส่งต่อให้น้องจิมใจดีแล้ว",
     cleared: "ล้างการเลือกทั้งหมดแล้ว",
     how: "How it works",
     howTitle: "Hover แล้วสีเปลี่ยน คลิกแล้วค้าง",
@@ -111,7 +110,6 @@ const copy = {
     saveNext: "Send to Nong Jim Jaidee Agent",
     clear: "Clear all",
     saved: "Pain areas saved successfully",
-    agentSaved: "Pain areas were saved and prepared for the Nong Jim Jaidee Agent flow",
     cleared: "All selections were cleared",
     how: "How it works",
     howTitle: "Hover to preview, click to lock selection",
@@ -147,7 +145,6 @@ export default function BodyMapPage() {
     setLang(value);
     saveDemoLang(value);
     if (savedNotice === copy.TH.saved || savedNotice === copy.EN.saved) setSavedNotice(copy[value].saved);
-    if (savedNotice === copy.TH.agentSaved || savedNotice === copy.EN.agentSaved) setSavedNotice(copy[value].agentSaved);
     if (savedNotice === copy.TH.cleared || savedNotice === copy.EN.cleared) setSavedNotice(copy[value].cleared);
   };
 

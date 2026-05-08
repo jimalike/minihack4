@@ -1,4 +1,31 @@
-# kindee menu-scan backend
+# Legacy Backend Prototype
+
+This backend is kept from the earlier food menu-scan prototype.
+
+It is not used by the current office-syndrome frontend flow:
+
+- `/`
+- `/login`
+- `/persona`
+- `/assessment`
+- `/body-map`
+- `/result`
+
+If you continue using the current office-syndrome demo only, you do not need
+to run this backend.
+
+Legacy source files were moved to:
+
+- `backend/legacy_food_prototype/db.py`
+- `backend/legacy_food_prototype/main.py`
+- `backend/legacy_food_prototype/embeddings.py`
+- `backend/legacy_food_prototype/retrieval.py`
+- `backend/legacy_food_prototype/thaifood.csv`
+- `backend/legacy_food_prototype/scripts/`
+
+---
+
+## Original Purpose
 
 FastAPI service that takes a menu photo and returns structured caution rows
 by calling Google Gemma 3 27B (vision) via OpenRouter.
