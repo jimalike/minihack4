@@ -1,14 +1,15 @@
 "use client";
 
 import {
+  AlertTriangle,
   ArrowLeft,
   ArrowRight,
+  CheckCircle2,
   ClipboardCheck,
-  FileText,
   HeartPulse,
-  ScanSearch,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -16,6 +17,8 @@ import { cn } from "@/lib/utils";
 const STORAGE_KEY = "office-relief-patient-intake";
 
 type PatientIntake = {
+  firstName?: string;
+  lastName?: string;
   age: string;
   gender: "male" | "female" | "other";
   workDevice: "desktop" | "laptop" | "tablet";
@@ -23,8 +26,20 @@ type PatientIntake = {
   dominantHand: "right" | "left" | "both";
 };
 
+type Answer = "yes" | "no" | null;
+
+const SCREENING_QUESTIONS = [
+  "ในช่วงนี้คุณมีอาการวิงเวียนศีรษะ ปวดหัว หรือมองไม่ชัด โดยไม่ทราบสาเหตุหรือไม่",
+  "คุณรับประทานยาในกลุ่มควบคุมความดัน หรือยาที่เกี่ยวข้องกับโรคหัวใจอยู่หรือไม่",
+  "คุณมีอาการเหนื่อยหอบง่าย เจ็บหน้าอก หรือแน่นหน้าอก ระหว่างการขึ้นลงบันไดหรือไม่",
+] as const;
+
 export default function AssessmentPage() {
+  const router = useRouter();
   const [savedProfile, setSavedProfile] = useState<PatientIntake | null>(null);
+  const [answers, setAnswers] = useState<Answer[]>([null, null, null]);
+  const [redirecting, setRedirecting] = useState(false);
+  const [showRiskPopup, setShowRiskPopup] = useState(false);
 
   useEffect(() => {
     const raw = window.localStorage.getItem(STORAGE_KEY);
@@ -32,9 +47,29 @@ export default function AssessmentPage() {
     try {
       setSavedProfile(JSON.parse(raw) as PatientIntake);
     } catch {
-      // ignore bad local data
+      // ignore malformed local data
     }
   }, []);
+
+  const allAnswered = answers.every((answer) => answer !== null);
+  const hasRiskAnswer = answers.some((answer) => answer === "yes");
+  const canContinue = allAnswered && !hasRiskAnswer;
+
+  useEffect(() => {
+    if (!hasRiskAnswer) return;
+    setShowRiskPopup(true);
+    setRedirecting(true);
+    const timer = window.setTimeout(() => {
+      router.push("/");
+    }, 10000);
+    return () => window.clearTimeout(timer);
+  }, [hasRiskAnswer, router]);
+
+  const patientName = useMemo(() => {
+    if (!savedProfile) return "-";
+    const fullName = [savedProfile.firstName, savedProfile.lastName].filter(Boolean).join(" ").trim();
+    return fullName || "-";
+  }, [savedProfile]);
 
   return (
     <div className="min-h-screen bg-[#f4f8fb] px-4 py-8 text-slate-900 sm:px-6 lg:px-8">
@@ -56,7 +91,7 @@ export default function AssessmentPage() {
                   <div
                     className={cn(
                       "inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-bold",
-                      item.active ? "bg-teal-600 text-white" : "bg-white text-slate-600 border border-slate-200",
+                      item.active ? "bg-teal-600 text-white" : "border border-slate-200 bg-white text-slate-600",
                     )}
                   >
                     <span
@@ -76,13 +111,13 @@ export default function AssessmentPage() {
 
             <div className="mt-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div className="max-w-3xl">
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-teal-600">Next Step Mockup</p>
+                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-teal-600">Screening Gate</p>
                 <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
-                  เลือกขั้นตอนถัดไปของการประเมินอาการ
+                  แบบคัดกรองก่อนเริ่มประเมินอาการ
                 </h1>
                 <p className="mt-3 text-sm font-medium leading-7 text-slate-600 sm:text-base">
-                  หลังจากบันทึกข้อมูลผู้ป่วยแล้ว หน้านี้ควรเป็นจุดที่ชวนให้ผู้ใช้ไปต่อได้ง่าย ว่าจะเริ่มทำแบบประเมินอาการ
-                  ดูข้อมูลสรุป หรือไปยังผลลัพธ์เบื้องต้นของระบบ
+                  เนื่องจากเรายังไม่มีอุปกรณ์สำหรับวัดความดันหรือประเมินภาวะเสี่ยงเฉพาะทางในระบบ
+                  จึงต้องมีคำถามคัดกรองก่อนทุกครั้ง หากเข้าข่ายความเสี่ยง ระบบจะไม่พาไปขั้นตอนถัดไป
                 </p>
               </div>
 
@@ -92,134 +127,175 @@ export default function AssessmentPage() {
             </div>
           </div>
 
-          <div className="px-8 py-8 sm:px-10">
-            <div className="rounded-[32px] bg-gradient-to-br from-teal-600 via-teal-500 to-cyan-500 p-6 text-white shadow-[0_24px_80px_rgba(20,184,166,0.28)]">
-              <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-                <div className="max-w-2xl">
-                  <p className="text-[11px] font-black uppercase tracking-[0.16em] text-white/75">Primary Action</p>
-                  <h2 className="mt-2 text-2xl font-black sm:text-3xl">เริ่มทำแบบประเมินอาการเบื้องต้น</h2>
-                  <p className="mt-3 text-sm font-medium leading-7 text-white/85">
-                    ปุ่มหลักนี้ควรเป็นสิ่งแรกที่ผู้ใช้กดต่อ เพื่อเริ่มตอบคำถามเรื่องตำแหน่งที่ปวด ระดับความปวด อาการชา ร้าว
-                    หรือข้อจำกัดในการเคลื่อนไหว
-                  </p>
-                </div>
-
-                <div className="flex min-w-[240px] flex-col gap-3">
-                  <Button asChild className="h-12 rounded-2xl bg-slate-950 text-base hover:bg-black">
-                    <a href="/persona">
-                      เริ่มแบบประเมิน
-                      <ArrowRight size={16} />
-                    </a>
-                  </Button>
-                  <div className="rounded-2xl border border-white/25 bg-white/10 px-4 py-3 text-sm font-semibold text-white/90">
-                    ตอนนี้ยังเป็น mockup
-                    <span className="mt-1 block text-xs font-medium text-white/70">
-                      ใช้ card นี้เป็นตัวแทนปุ่มไป flow ถัดไปในเดโม่
-                    </span>
+          <div className="grid gap-8 px-8 py-8 lg:grid-cols-[1.15fr_0.85fr] sm:px-10">
+            <section className="space-y-5">
+              <div className="rounded-[32px] bg-gradient-to-br from-teal-600 via-teal-500 to-cyan-500 p-6 text-white shadow-[0_24px_80px_rgba(20,184,166,0.28)]">
+                <div className="flex items-start gap-4">
+                  <div className="rounded-2xl bg-white/10 p-3">
+                    <HeartPulse size={22} />
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-black uppercase tracking-[0.16em] text-white/75">Primary Action</p>
+                    <h2 className="mt-2 text-2xl font-black">เริ่มตอบคำถามคัดกรอง</h2>
+                    <p className="mt-3 text-sm font-medium leading-7 text-white/85">
+                      หากตอบว่า “ใช่” ในข้อใดข้อหนึ่ง ระบบจะปฏิเสธไม่ให้ไปขั้นตอนถัดไป และพากลับไปหน้าเดิมเพื่อความปลอดภัย
+                    </p>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div className="mt-8 grid gap-5 lg:grid-cols-3">
-              <ActionCard
-                accent="teal"
-                cta="เปิดหน้าคำถาม"
-                desc="เริ่ม flow การถามอาการ เช่น ปวดตรงไหน ปวดเท่าไร มีอาการชาหรือร้าวหรือไม่"
-                icon={<HeartPulse size={20} />}
-                title="แบบประเมินอาการ"
-              />
-              <ActionCard
-                accent="slate"
-                cta="ดูข้อมูลล่าสุด"
-                desc="ใช้ข้อมูลจาก Patient Profile ที่บันทึกไว้ เพื่อให้ทีมเห็นบริบทก่อนเริ่มประเมินจริง"
-                icon={<FileText size={20} />}
-                title="สรุปข้อมูลผู้ป่วย"
-              />
-              <ActionCard
-                accent="cyan"
-                cta="ไปหน้าผลลัพธ์"
-                desc="ต่อยอดไปเป็นหน้าผลเบื้องต้น คำแนะนำ หรือหน้าที่ให้เริ่มทำ movement assessment"
-                icon={<ScanSearch size={20} />}
-                title="ผลลัพธ์ถัดไป"
-              />
-            </div>
+              {SCREENING_QUESTIONS.map((question, index) => (
+                <QuestionCard
+                  answer={answers[index]}
+                  index={index}
+                  key={question}
+                  onAnswer={(value) =>
+                    setAnswers((current) => current.map((item, itemIndex) => (itemIndex === index ? value : item)))
+                  }
+                  question={question}
+                />
+              ))}
 
-            <div className="mt-8 grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
-              <div className="rounded-[28px] border border-teal-100 bg-teal-50 p-6">
-                <p className="text-xs font-black uppercase tracking-[0.14em] text-teal-700">พร้อมใช้งานหรือยัง</p>
-                <p className="mt-3 text-sm font-medium leading-7 text-teal-900">
-                  {savedProfile
-                    ? "พบข้อมูลผู้ป่วยที่บันทึกไว้แล้ว ดังนั้นหน้านี้สามารถใช้เป็นจุดเริ่มของขั้นตอนประเมินอาการต่อได้ทันที"
-                    : "ยังไม่พบข้อมูลผู้ป่วยที่บันทึกไว้ แนะนำให้กลับไปหน้า Patient Profile ก่อน แล้วค่อยกดเข้ามาหน้านี้อีกครั้ง"}
-                </p>
+              <div
+                className={cn(
+                  "rounded-[28px] border p-5",
+                  canContinue
+                    ? "border-emerald-200 bg-emerald-50"
+                    : "border-slate-200 bg-slate-50",
+                )}
+              >
+                {canContinue ? (
+                  <div className="flex gap-3">
+                    <CheckCircle2 className="mt-0.5 text-emerald-600" size={20} />
+                    <div>
+                      <h3 className="text-base font-black text-emerald-700">ผ่านการคัดกรองเบื้องต้น</h3>
+                      <p className="mt-2 text-sm font-medium leading-7 text-emerald-700">
+                        สามารถไปขั้นตอนถัดไปของการประเมินอาการได้
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <h3 className="text-base font-black text-slate-800">รอคำตอบให้ครบทั้ง 3 ข้อ</h3>
+                    <p className="mt-2 text-sm font-medium leading-7 text-slate-600">
+                      เมื่อคุณตอบครบ ระบบจะสรุปให้ทันทีว่าสามารถไปขั้นตอนต่อไปได้หรือไม่
+                    </p>
+                  </div>
+                )}
               </div>
 
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Button asChild className="h-12 rounded-2xl bg-teal-600 px-6 hover:bg-teal-700" disabled={!canContinue}>
+                  <a href="/persona">
+                    ไปขั้นตอนถัดไป
+                    <ArrowRight size={16} />
+                  </a>
+                </Button>
+                <Button asChild className="h-12 rounded-2xl px-6" variant="outline">
+                  <a href="/persona">กลับไปหน้าเดิม</a>
+                </Button>
+              </div>
+            </section>
+
+            <aside className="space-y-5">
               <div className="rounded-[28px] border border-slate-200 bg-slate-50 p-6">
                 <p className="text-xs font-black uppercase tracking-[0.14em] text-slate-500">Quick Summary</p>
                 <div className="mt-4 space-y-3">
+                  <SummaryItem label="ชื่อผู้ป่วย" value={patientName} />
                   <SummaryItem label="อายุ" value={savedProfile?.age || "-"} />
                   <SummaryItem label="อุปกรณ์หลัก" value={savedProfile ? deviceText(savedProfile.workDevice) : "-"} />
                   <SummaryItem label="ลักษณะงาน" value={savedProfile ? workStyleText(savedProfile.workStyle) : "-"} />
                 </div>
               </div>
-            </div>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Button asChild className="h-12 rounded-2xl bg-teal-600 px-6 hover:bg-teal-700">
-                <a href="/persona">กลับไปแก้ข้อมูลผู้ป่วย</a>
-              </Button>
-              <Button asChild className="h-12 rounded-2xl px-6" variant="outline">
-                <a href="/">กลับหน้าแรก</a>
-              </Button>
-            </div>
+              <div className="rounded-[28px] border border-amber-100 bg-amber-50 p-6">
+                <p className="text-xs font-black uppercase tracking-[0.14em] text-amber-700">เงื่อนไขการปฏิเสธ</p>
+                <p className="mt-3 text-sm font-medium leading-7 text-amber-900">
+                  ถ้าผู้ใช้มีอาการตามคำถามคัดกรอง หรือมีประวัติใช้ยาที่เกี่ยวข้องกับความดันและโรคหัวใจ
+                  เราจะไม่พาไปขั้นตอนประเมินอาการต่อ เพราะยังไม่มีอุปกรณ์ในระบบสำหรับคัดแยกความเสี่ยงกลุ่มนี้
+                </p>
+              </div>
+            </aside>
           </div>
         </div>
       </div>
+
+      {showRiskPopup ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-[28px] border border-rose-200 bg-white p-6 shadow-[0_24px_80px_rgba(15,23,42,0.22)]">
+            <div className="flex items-start gap-4">
+              <div className="rounded-2xl bg-rose-100 p-3 text-rose-600">
+                <AlertTriangle size={22} />
+              </div>
+              <div>
+                <h2 className="text-xl font-black text-rose-700">ไม่สามารถไปขั้นตอนถัดไปได้</h2>
+                <p className="mt-3 text-sm font-medium leading-7 text-slate-700">
+                  พบคำตอบที่เข้าข่ายความเสี่ยงจากแบบคัดกรอง ระบบจะหยุด flow การประเมินไว้ก่อน
+                  และพากลับไปหน้าแรกสุด
+                </p>
+                {redirecting ? (
+                  <p className="mt-3 text-sm font-bold text-rose-700">กำลังกลับไปหน้าแรกใน 10 วินาที...</p>
+                ) : null}
+                <div className="mt-5">
+                  <Button
+                    className="h-11 rounded-2xl bg-rose-600 px-5 hover:bg-rose-700"
+                    onClick={() => router.push("/")}
+                    type="button"
+                  >
+                    กลับหน้าแรก
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
 
-function ActionCard({
-  accent,
-  icon,
-  title,
-  desc,
-  cta,
+function QuestionCard({
+  index,
+  question,
+  answer,
+  onAnswer,
 }: {
-  accent: "teal" | "slate" | "cyan";
-  icon: React.ReactNode;
-  title: string;
-  desc: string;
-  cta: string;
+  index: number;
+  question: string;
+  answer: Answer;
+  onAnswer: (value: Answer) => void;
 }) {
   return (
-    <button
-      className={cn(
-        "group rounded-[28px] border p-5 text-left transition hover:-translate-y-1 hover:shadow-lg",
-        accent === "teal" && "border-teal-100 bg-teal-50/70 hover:border-teal-200",
-        accent === "slate" && "border-slate-200 bg-slate-50 hover:border-slate-300",
-        accent === "cyan" && "border-cyan-100 bg-cyan-50/70 hover:border-cyan-200",
-      )}
-      type="button"
-    >
-      <div
-        className={cn(
-          "flex h-11 w-11 items-center justify-center rounded-2xl bg-white shadow-sm",
-          accent === "teal" && "text-teal-700",
-          accent === "slate" && "text-slate-700",
-          accent === "cyan" && "text-cyan-700",
-        )}
-      >
-        {icon}
+    <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
+      <p className="text-xs font-black uppercase tracking-[0.14em] text-teal-600">Question {index + 1}</p>
+      <h2 className="mt-3 text-lg font-black leading-8 text-slate-900">{question}</h2>
+      <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+        <button
+          className={cn(
+            "rounded-2xl border px-5 py-3 text-sm font-bold transition",
+            answer === "yes"
+              ? "border-rose-500 bg-rose-50 text-rose-700"
+              : "border-slate-200 bg-slate-50 text-slate-700 hover:border-rose-200 hover:bg-rose-50/60",
+          )}
+          onClick={() => onAnswer("yes")}
+          type="button"
+        >
+          ใช่
+        </button>
+        <button
+          className={cn(
+            "rounded-2xl border px-5 py-3 text-sm font-bold transition",
+            answer === "no"
+              ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+              : "border-slate-200 bg-slate-50 text-slate-700 hover:border-emerald-200 hover:bg-emerald-50/60",
+          )}
+          onClick={() => onAnswer("no")}
+          type="button"
+        >
+          ไม่ใช่
+        </button>
       </div>
-      <h2 className="mt-4 text-lg font-black text-slate-900">{title}</h2>
-      <p className="mt-2 text-sm font-medium leading-7 text-slate-600">{desc}</p>
-      <div className="mt-5 inline-flex items-center gap-2 text-sm font-black text-slate-900">
-        <span>{cta}</span>
-        <span className="transition group-hover:translate-x-1">→</span>
-      </div>
-    </button>
+    </div>
   );
 }
 

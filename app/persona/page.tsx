@@ -9,18 +9,12 @@ import { cn } from "@/lib/utils";
 
 const STORAGE_KEY = "office-relief-patient-intake";
 
-type WorkDevice = "desktop" | "laptop" | "tablet";
-type WorkStyle = "sit" | "stand" | "mixed";
 type Gender = "male" | "female" | "other";
-type DominantHand = "right" | "left" | "both";
 type PatientIntake = {
   firstName: string;
   lastName: string;
   age: string;
   gender: Gender;
-  workDevice: WorkDevice;
-  workStyle: WorkStyle;
-  dominantHand: DominantHand;
 };
 
 export default function PersonaPage() {
@@ -31,9 +25,6 @@ export default function PersonaPage() {
     lastName: "",
     age: "",
     gender: "female",
-    workDevice: "laptop",
-    workStyle: "sit",
-    dominantHand: "right",
   };
   const [form, setForm] = useState<PatientIntake>(defaultForm);
   const [savedProfile, setSavedProfile] = useState<PatientIntake | null>(null);
@@ -49,9 +40,6 @@ export default function PersonaPage() {
         lastName: typeof parsed.lastName === "string" ? parsed.lastName : "",
         age: typeof parsed.age === "string" ? parsed.age : "",
         gender: parsed.gender === "male" || parsed.gender === "female" || parsed.gender === "other" ? parsed.gender : "female",
-        workDevice: parsed.workDevice === "desktop" || parsed.workDevice === "laptop" || parsed.workDevice === "tablet" ? parsed.workDevice : "laptop",
-        workStyle: parsed.workStyle === "sit" || parsed.workStyle === "stand" || parsed.workStyle === "mixed" ? parsed.workStyle : "sit",
-        dominantHand: parsed.dominantHand === "right" || parsed.dominantHand === "left" || parsed.dominantHand === "both" ? parsed.dominantHand : "right",
       };
       setForm(hydrated);
       setSavedProfile(hydrated);
@@ -150,60 +138,6 @@ export default function PersonaPage() {
                   <ChoiceCard active={form.gender === "other"} label="อื่น ๆ" onClick={() => update("gender", "other")} />
                 </div>
               </Field>
-
-              <Field label="ลักษณะอุปกรณ์ทำงานหลัก">
-                <div className="grid gap-3">
-                  <ChoiceRow
-                    active={form.workDevice === "desktop"}
-                    desc="คอมพิวเตอร์ตั้งโต๊ะ (Desktop)"
-                    onClick={() => update("workDevice", "desktop")}
-                    title="Desktop"
-                  />
-                  <ChoiceRow
-                    active={form.workDevice === "laptop"}
-                    desc="แล็ปท็อป (Laptop)"
-                    onClick={() => update("workDevice", "laptop")}
-                    title="Laptop"
-                  />
-                  <ChoiceRow
-                    active={form.workDevice === "tablet"}
-                    desc="แท็บเล็ต"
-                    onClick={() => update("workDevice", "tablet")}
-                    title="Tablet"
-                  />
-                </div>
-              </Field>
-
-              <Field label="ลักษณะงานและชั่วโมงการทำงาน">
-                <div className="grid gap-3">
-                  <ChoiceRow
-                    active={form.workStyle === "sit"}
-                    desc="นั่งหน้าจอต่อเนื่องเป็นหลัก"
-                    onClick={() => update("workStyle", "sit")}
-                    title="นั่งหน้าจอต่อเนื่อง"
-                  />
-                  <ChoiceRow
-                    active={form.workStyle === "stand"}
-                    desc="ยืนทำงานเป็นหลัก"
-                    onClick={() => update("workStyle", "stand")}
-                    title="ยืนทำงานเป็นหลัก"
-                  />
-                  <ChoiceRow
-                    active={form.workStyle === "mixed"}
-                    desc="เดินสลับนั่งหรือเปลี่ยนอิริยาบถระหว่างวัน"
-                    onClick={() => update("workStyle", "mixed")}
-                    title="เดินสลับนั่ง"
-                  />
-                </div>
-              </Field>
-
-              <Field label="มือข้างที่ถนัด">
-                <div className="grid gap-3 sm:grid-cols-3">
-                  <ChoiceCard active={form.dominantHand === "right"} label="ขวา" onClick={() => update("dominantHand", "right")} />
-                  <ChoiceCard active={form.dominantHand === "left"} label="ซ้าย" onClick={() => update("dominantHand", "left")} />
-                  <ChoiceCard active={form.dominantHand === "both"} label="ทั้งสองข้าง" onClick={() => update("dominantHand", "both")} />
-                </div>
-              </Field>
             </div>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -245,9 +179,6 @@ export default function PersonaPage() {
                 <SummaryItem label="นามสกุล" value={savedProfile?.lastName || "-"} />
                 <SummaryItem label="อายุ" value={savedProfile?.age || "-"} />
                 <SummaryItem label="เพศ" value={savedProfile ? genderText(savedProfile.gender) : "-"} />
-                <SummaryItem label="อุปกรณ์หลัก" value={savedProfile ? deviceText(savedProfile.workDevice) : "-"} />
-                <SummaryItem label="ลักษณะงาน" value={savedProfile ? workStyleText(savedProfile.workStyle) : "-"} />
-                <SummaryItem label="มือข้างที่ถนัด" value={savedProfile ? handText(savedProfile.dominantHand) : "-"} />
               </div>
             </div>
 
@@ -297,32 +228,6 @@ function ChoiceCard({
   );
 }
 
-function ChoiceRow({
-  active,
-  title,
-  desc,
-  onClick,
-}: {
-  active: boolean;
-  title: string;
-  desc: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      className={cn(
-        "rounded-2xl border px-4 py-4 text-left transition",
-        active ? "border-teal-500 bg-teal-50" : "border-slate-200 bg-white hover:border-slate-300",
-      )}
-      onClick={onClick}
-      type="button"
-    >
-      <p className={cn("text-sm font-bold", active ? "text-teal-700" : "text-slate-900")}>{title}</p>
-      <p className="mt-1 text-sm font-medium text-slate-600">{desc}</p>
-    </button>
-  );
-}
-
 function SummaryItem({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl bg-slate-50 px-4 py-3">
@@ -336,22 +241,4 @@ function genderText(value: Gender) {
   if (value === "male") return "ชาย";
   if (value === "female") return "หญิง";
   return "อื่น ๆ";
-}
-
-function deviceText(value: WorkDevice) {
-  if (value === "desktop") return "Desktop";
-  if (value === "laptop") return "Laptop";
-  return "Tablet";
-}
-
-function workStyleText(value: WorkStyle) {
-  if (value === "sit") return "นั่งหน้าจอต่อเนื่อง";
-  if (value === "stand") return "ยืนทำงานเป็นหลัก";
-  return "เดินสลับนั่ง";
-}
-
-function handText(value: DominantHand) {
-  if (value === "right") return "ขวา";
-  if (value === "left") return "ซ้าย";
-  return "ทั้งสองข้าง";
 }
