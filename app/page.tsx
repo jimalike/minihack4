@@ -32,6 +32,8 @@ const copy = {
     headline3: "ให้ถูกต้องที่บ้าน",
     sub:
       "แอปช่วยประเมินอาการเบื้องต้นจากแบบสอบถามและการทำท่าทางบางส่วน เพื่อดูแนวโน้มของออฟฟิศซินโดรม ช่วยแนะนำการฝึกที่เหมาะสม และบอกได้ว่าควรเฝ้าดูอาการต่อหรือปรึกษาแพทย์",
+    disclaimer:
+      "แอปนี้เป็นเพียงการคัดกรองเบื้องต้นไม่ใช่เครื่องมือวินิจฉัยโรค หากปวดรุนแรง ปวดร้าว ชา อ่อนแรง หรือมีอาการต่อเนื่อง ควรปรึกษาผู้เชี่ยวชาญด้านสุขภาพ",
     ctaPrimary: "เริ่มต้นใช้งาน",
     footer: "Prototype landing page for therapy and office syndrome screening",
     stats: [
@@ -88,8 +90,8 @@ const copy = {
 
 type CopyKey = keyof typeof copy.TH;
 
-function t(lang: Lang, key: CopyKey) {
-  return copy[lang][key] ?? copy.TH[key];
+function t<K extends CopyKey>(lang: Lang, key: K): (typeof copy.TH)[K] {
+  return copy[lang][key] as (typeof copy.TH)[K];
 }
 
 const supportedLangs: Array<{ code: Lang; name: string; flag: string }> = [
@@ -233,13 +235,10 @@ function Navbar({
 }
 
 function Hero({ lang }: { lang: Lang }) {
-  const stats = t(lang, "stats") as Array<{ label: string; value: string; tone: "teal" | "cyan" | "slate" }>;
-  const bodyMapItems = t(lang, "bodyMapItems") as string[];
-  const timelineItems = t(lang, "timelineItems") as string[];
-  const disclaimer =
-    lang === "TH"
-      ? "แอปนี้เป็นเพียงการคัดกรองเบื้องต้นไม่ใช่เครื่องมือวินิจฉัยโรค หากปวดรุนแรง ปวดร้าว ชา อ่อนแรง หรือมีอาการต่อเนื่อง ควรปรึกษาผู้เชี่ยวชาญด้านสุขภาพ"
-      : t(lang, "disclaimer");
+  const stats = t(lang, "stats");
+  const bodyMapItems = t(lang, "bodyMapItems");
+  const timelineItems = t(lang, "timelineItems");
+  const disclaimer = t(lang, "disclaimer");
 
   return (
     <section className="relative overflow-hidden px-4 pb-20 pt-28 sm:px-6 sm:pb-28 sm:pt-32 lg:px-8">
