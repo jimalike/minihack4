@@ -14,3 +14,4 @@ yarn-error.log*
 backend/.venv/
 backend/__pycache__/
 **/__pycache__/
+.next-dev.out.log

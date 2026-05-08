@@ -387,3 +387,4 @@
  ✓ Compiled in 431ms (576 modules)
  ✓ Compiled in 322ms (576 modules)
  GET /result 200 in 100ms
+ GET /body-map 200 in 43ms
