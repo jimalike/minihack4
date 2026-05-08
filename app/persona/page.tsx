@@ -136,7 +136,7 @@ export default function PersonaPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f4f8fb] px-4 py-8 text-slate-900 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#f4f8fb] px-4 py-6 text-slate-900 sm:px-6 sm:py-8 lg:px-8">
       <div className="mx-auto max-w-5xl">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
@@ -154,8 +154,8 @@ export default function PersonaPage() {
             ) : null}
           </div>
 
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-end gap-2 rounded-full border border-slate-200 bg-white p-1 shadow-sm">
+          <div className="flex w-full flex-col gap-3 sm:w-auto">
+            <div className="flex items-center justify-start gap-2 self-start rounded-full border border-slate-200 bg-white p-1 shadow-sm sm:justify-end sm:self-auto">
               {(["TH", "EN"] as DemoLang[]).map((item) => (
                 <button
                   key={item}
@@ -171,7 +171,7 @@ export default function PersonaPage() {
               ))}
             </div>
 
-            <div className="rounded-[28px] border border-white/80 bg-white/90 p-4 shadow-sm">
+            <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm sm:rounded-[28px]">
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-50 text-teal-700">
                   <ClipboardList size={22} />
@@ -186,7 +186,7 @@ export default function PersonaPage() {
         </div>
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-          <form onSubmit={submit} className="rounded-[32px] border border-white/80 bg-white/92 p-6 shadow-[0_24px_70px_rgba(15,23,42,0.10)] backdrop-blur-sm sm:p-8">
+          <form onSubmit={submit} className="rounded-[28px] border border-white/80 bg-white/92 p-5 shadow-[0_24px_70px_rgba(15,23,42,0.10)] backdrop-blur-sm sm:rounded-[32px] sm:p-8">
             <div className="grid gap-6">
               <div className="grid gap-6 sm:grid-cols-2">
                 <Field label={t.firstName}>

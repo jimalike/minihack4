@@ -305,3 +305,30 @@
  GET /body-map 200 in 797ms
  GET /persona 200 in 817ms
  GET /persona 200 in 44ms
+ GET /login 200 in 56ms
+ GET / 200 in 55ms
+ GET /login 200 in 56ms
+ GET /body-map 200 in 68ms
+ ✓ Compiled in 522ms (573 modules)
+ ✓ Compiled in 474ms (573 modules)
+ ✓ Compiled in 518ms (573 modules)
+ ✓ Compiled in 468ms (573 modules)
+ GET /persona 200 in 104ms
+ GET /assessment 200 in 122ms
+ GET /body-map 200 in 96ms
+ GET /camera 200 in 128ms
+ GET /body-map 200 in 52ms
+ GET /assessment 200 in 59ms
+ GET /persona 200 in 43ms
+ GET /login 200 in 46ms
+ ✓ Compiled / in 241ms (288 modules)
+ GET / 200 in 405ms
+ GET / 200 in 57ms
+ GET /login 200 in 82ms
+ ✓ Compiled /_not-found in 427ms (572 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 599ms
+ GET /body-map 200 in 118ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 59ms
+ GET /body-map 200 in 70ms
+ GET /login 200 in 67ms
+ GET /body-map 200 in 41ms

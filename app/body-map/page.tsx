@@ -180,14 +180,14 @@ export default function BodyMapPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f4f8fb] px-4 py-8 text-slate-900 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#f4f8fb] px-4 py-6 text-slate-900 sm:px-6 sm:py-8 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
           <a href="/assessment" className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 transition hover:text-slate-800">
             <ArrowLeft size={14} />
             {t.back}
           </a>
-          <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white p-1 shadow-sm">
+          <div className="flex items-center gap-2 self-start rounded-full border border-slate-200 bg-white p-1 shadow-sm sm:self-auto">
             {(["TH", "EN"] as DemoLang[]).map((item) => (
               <button
                 key={item}
@@ -204,12 +204,12 @@ export default function BodyMapPage() {
           </div>
         </div>
 
-        <div className="mt-6 overflow-hidden rounded-[36px] border border-white/80 bg-white/92 shadow-[0_24px_70px_rgba(15,23,42,0.10)] backdrop-blur-sm">
-          <div className="border-b border-slate-100 bg-gradient-to-r from-teal-50 via-white to-cyan-50 px-8 py-6 sm:px-10">
+        <div className="mt-6 overflow-hidden rounded-[28px] border border-white/80 bg-white/92 shadow-[0_24px_70px_rgba(15,23,42,0.10)] backdrop-blur-sm sm:rounded-[36px]">
+          <div className="border-b border-slate-100 bg-gradient-to-r from-teal-50 via-white to-cyan-50 px-5 py-5 sm:px-10 sm:py-6">
             <p className="text-[11px] font-black uppercase tracking-[0.18em] text-teal-600">{t.eyebrow}</p>
-            <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">{t.title}</h1>
+            <h1 className="mt-2 text-2xl font-black tracking-tight text-slate-900 sm:text-4xl">{t.title}</h1>
             <p className="mt-3 max-w-3xl text-sm font-medium leading-7 text-slate-600 sm:text-base">{t.body}</p>
-            <div className="mt-4 max-w-3xl rounded-[24px] border border-amber-200 bg-gradient-to-r from-amber-50 via-yellow-50 to-orange-50 px-5 py-4 shadow-sm">
+            <div className="mt-4 max-w-3xl rounded-[20px] border border-amber-200 bg-gradient-to-r from-amber-50 via-yellow-50 to-orange-50 px-4 py-4 shadow-sm sm:rounded-[24px] sm:px-5">
               <div className="flex items-start gap-3">
                 <div className="rounded-2xl bg-white p-2.5 text-amber-600 shadow-sm">
                   <AlertCircle size={18} />
@@ -222,7 +222,7 @@ export default function BodyMapPage() {
             </div>
           </div>
 
-          <div className="grid gap-8 px-8 py-8 lg:grid-cols-[1.2fr_0.8fr] sm:px-10">
+          <div className="grid gap-6 px-5 py-6 sm:px-10 sm:py-8 lg:grid-cols-[1.2fr_0.8fr] lg:gap-8">
             <section>
               <div className="grid gap-6 lg:grid-cols-2">
                 <BodyFigure

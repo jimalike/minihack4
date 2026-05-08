@@ -160,9 +160,9 @@ export default function AssessmentPage() {
   }, [savedProfile]);
 
   return (
-    <div className="min-h-screen bg-[#f4f8fb] px-4 py-8 text-slate-900 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#f4f8fb] px-4 py-6 text-slate-900 sm:px-6 sm:py-8 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
           <a
             href="/persona"
             className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 transition hover:text-slate-800"
@@ -170,7 +170,7 @@ export default function AssessmentPage() {
             <ArrowLeft size={14} />
             {t.back}
           </a>
-          <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white p-1 shadow-sm">
+          <div className="flex items-center gap-2 self-start rounded-full border border-slate-200 bg-white p-1 shadow-sm sm:self-auto">
             {(["TH", "EN"] as DemoLang[]).map((item) => (
               <button
                 key={item}
@@ -187,8 +187,8 @@ export default function AssessmentPage() {
           </div>
         </div>
 
-        <div className="mt-6 overflow-hidden rounded-[36px] border border-white/80 bg-white/92 shadow-[0_24px_70px_rgba(15,23,42,0.10)] backdrop-blur-sm">
-          <div className="border-b border-slate-100 bg-gradient-to-r from-teal-50 via-white to-cyan-50 px-8 py-6 sm:px-10">
+        <div className="mt-6 overflow-hidden rounded-[28px] border border-white/80 bg-white/92 shadow-[0_24px_70px_rgba(15,23,42,0.10)] backdrop-blur-sm sm:rounded-[36px]">
+          <div className="border-b border-slate-100 bg-gradient-to-r from-teal-50 via-white to-cyan-50 px-5 py-5 sm:px-10 sm:py-6">
             <div className="flex flex-wrap items-center gap-3">
               {[
                 { step: "1", label: t.step1, active: false },
@@ -220,7 +220,7 @@ export default function AssessmentPage() {
             <div className="mt-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div className="max-w-3xl">
                 <p className="text-[11px] font-black uppercase tracking-[0.18em] text-teal-600">{t.eyebrow}</p>
-                <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">{t.title}</h1>
+                <h1 className="mt-2 text-2xl font-black tracking-tight text-slate-900 sm:text-4xl">{t.title}</h1>
                 <p className="mt-3 text-sm font-medium leading-7 text-slate-600 sm:text-base">{t.body}</p>
               </div>
 
@@ -230,7 +230,7 @@ export default function AssessmentPage() {
             </div>
           </div>
 
-          <div className="grid gap-8 px-8 py-8 lg:grid-cols-[1.15fr_0.85fr] sm:px-10">
+          <div className="grid gap-6 px-5 py-6 sm:px-10 sm:py-8 lg:grid-cols-[1.15fr_0.85fr] lg:gap-8">
             <section className="space-y-5">
               <div className="rounded-[32px] bg-gradient-to-br from-teal-600 via-teal-500 to-cyan-500 p-6 text-white shadow-[0_24px_80px_rgba(20,184,166,0.28)]">
                 <div className="flex items-start gap-4">
