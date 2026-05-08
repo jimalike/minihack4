@@ -11,11 +11,11 @@ import { type DemoLang, loadDemoLang, saveDemoLang } from "@/lib/demo-language";
 const copy = {
   TH: {
     back: "กลับหน้าแรก",
-    badge: "Mockup patient onboarding",
+    badge: "Patient onboarding",
     heroTitle: "เริ่มต้นด้วยการเข้าสู่ระบบ",
     heroAccent: "เพื่อเก็บประวัติผู้ป่วยอย่างเป็นระบบ",
     heroBody:
-      "หน้านี้เป็น mockup สำหรับ flow การใช้งานจริงของแอปสุขภาพ หลังจาก login หรือสมัครสมาชิกแล้ว ระบบจะพาไปกรอกข้อมูลพื้นฐานของผู้ป่วยเพื่อใช้ประกอบการประเมินอาการต่อไป",
+      "หน้านี้เป็นส่วนเริ่มต้นของ flow การใช้งานแอปสุขภาพ หลังจาก login หรือสมัครสมาชิกแล้ว ระบบจะพาไปกรอกข้อมูลพื้นฐานของผู้ป่วยเพื่อใช้ประกอบการประเมินอาการต่อไป",
     card1: "เก็บข้อมูลพื้นฐาน",
     card2: "ฟอร์มพร้อมใช้งาน",
     card3: "Login → Patient Form",
@@ -28,16 +28,16 @@ const copy = {
     registerSub: "สร้างบัญชีเพื่อเริ่มต้นเก็บข้อมูลผู้ป่วยและการติดตามอาการ",
     email: "อีเมล",
     password: "รหัสผ่าน",
-    mockNotice: "Mockup mode: ไม่ว่าจะกด Login หรือ Register ระบบจะพาไปหน้ากรอกข้อมูลผู้ป่วยถัดไป",
+    notice: "ไม่ว่าจะกด Login หรือ Register ระบบจะพาไปหน้ากรอกข้อมูลผู้ป่วยถัดไป",
     submitting: "กำลังไปหน้าถัดไป...",
   },
   EN: {
     back: "Back to home",
-    badge: "Mockup patient onboarding",
+    badge: "Patient onboarding",
     heroTitle: "Start with account access",
     heroAccent: "to keep patient history in a structured flow",
     heroBody:
-      "This page is a mockup for the real onboarding flow. After login or registration, the user is taken to the patient profile form before continuing to the assessment steps.",
+      "This page is the starting point of the onboarding flow. After login or registration, the user is taken to the patient profile form before continuing to the assessment steps.",
     card1: "Basic patient data",
     card2: "Ready intake form",
     card3: "Login → Patient Form",
@@ -50,7 +50,7 @@ const copy = {
     registerSub: "Create an account to start patient intake and follow-up flow",
     email: "Email",
     password: "Password",
-    mockNotice: "Mockup mode: both Login and Register continue to the patient profile page.",
+    notice: "Both Login and Register continue to the patient profile page.",
     submitting: "Continuing...",
   },
 } as const;
@@ -126,7 +126,7 @@ export default function LoginPage() {
               <div className="mt-10 grid gap-4 sm:grid-cols-3">
                 <InfoCard title="Patient History" value={t.card1} />
                 <InfoCard title="Structured Intake" value={t.card2} />
-                <InfoCard title="Mock Flow" value={t.card3} />
+                <InfoCard title="Flow" value={t.card3} />
               </div>
             </div>
 
@@ -231,7 +231,7 @@ export default function LoginPage() {
                 </Field>
 
                 <div className="rounded-2xl border border-teal-100 bg-teal-50 px-4 py-3 text-sm font-medium leading-6 text-teal-800">
-                  {t.mockNotice}
+                  {t.notice}
                 </div>
 
                 <Button className="h-12 w-full rounded-2xl bg-teal-600 text-base hover:bg-teal-700" disabled={submitting} type="submit">

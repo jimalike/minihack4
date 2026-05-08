@@ -23,8 +23,7 @@ const copy = {
     back: "กลับไปหน้า login",
     eyebrow: "Patient Intake",
     title: "ระบุข้อมูลพื้นฐานของผู้ป่วย",
-    body: "หน้านี้เป็น mockup สำหรับเก็บข้อมูลตั้งต้นก่อนเริ่มประเมินอาการจริง ข้อมูลที่กรอกจะช่วยให้ระบบตีความอาการได้เหมาะสมขึ้น",
-    flow: "Login / Register → Patient Profile",
+    body: "หน้านี้ใช้เก็บข้อมูลตั้งต้นก่อนเริ่มประเมินอาการจริง ข้อมูลที่กรอกจะช่วยให้ระบบตีความอาการได้เหมาะสมขึ้น",
     firstName: "ชื่อ",
     firstNamePlaceholder: "เช่น สุพนัต",
     lastName: "นามสกุล",
@@ -43,7 +42,7 @@ const copy = {
     summarySaved: "ข้อมูลที่บันทึกไว้ล่าสุด",
     summaryEmpty: "ยังไม่มีข้อมูลที่บันทึก",
     noteTitle: "หมายเหตุ",
-    noteBody: "ตอนนี้เป็น mockup ดังนั้นเมื่อกดบันทึก ระบบจะเก็บข้อมูลไว้ในเครื่องก่อน และเมื่อพร้อมแล้วสามารถกดไปหน้าถัดไปเพื่อดู flow ของหน้าถัดไปได้เลย",
+    noteBody: "เมื่อกดบันทึก ระบบจะเก็บข้อมูลไว้ในเครื่องก่อน และเมื่อพร้อมแล้วสามารถกดไปหน้าถัดไปเพื่อดู flow ของหน้าถัดไปได้เลย",
     loaded: "โหลดข้อมูลที่เคยบันทึกไว้แล้ว",
     saved: "บันทึกข้อมูลผู้ป่วยเรียบร้อยแล้ว",
   },
@@ -51,8 +50,7 @@ const copy = {
     back: "Back to login",
     eyebrow: "Patient Intake",
     title: "Enter the patient's basic information",
-    body: "This mockup stores the initial patient profile before the real assessment flow begins. The entered data helps the system interpret symptoms more clearly.",
-    flow: "Login / Register → Patient Profile",
+    body: "This page stores the initial patient profile before the real assessment flow begins. The entered data helps the system interpret symptoms more clearly.",
     firstName: "First name",
     firstNamePlaceholder: "e.g. Supanut",
     lastName: "Last name",
@@ -71,7 +69,7 @@ const copy = {
     summarySaved: "Latest saved record",
     summaryEmpty: "No saved profile yet",
     noteTitle: "Note",
-    noteBody: "This is still a mockup. When you save, the profile is stored locally first, and you can continue to the next page to review the rest of the demo flow.",
+    noteBody: "When you save, the profile is stored locally first, and you can continue to the next page to review the rest of the demo flow.",
     loaded: "Loaded previously saved profile",
     saved: "Patient profile saved successfully",
   },
@@ -154,8 +152,8 @@ export default function PersonaPage() {
             ) : null}
           </div>
 
-          <div className="flex w-full flex-col gap-3 sm:w-auto">
-            <div className="flex items-center justify-start gap-2 self-start rounded-full border border-slate-200 bg-white p-1 shadow-sm sm:justify-end sm:self-auto">
+          <div className="flex flex-col gap-3">
+            <div className="inline-flex w-fit items-center justify-start gap-2 self-start rounded-full border border-slate-200 bg-white p-1 shadow-sm sm:justify-end sm:self-auto">
               {(["TH", "EN"] as DemoLang[]).map((item) => (
                 <button
                   key={item}
@@ -169,18 +167,6 @@ export default function PersonaPage() {
                   {item}
                 </button>
               ))}
-            </div>
-
-            <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm sm:rounded-[28px]">
-              <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-50 text-teal-700">
-                  <ClipboardList size={22} />
-                </div>
-                <div>
-                  <p className="text-xs font-black uppercase tracking-[0.14em] text-slate-500">Mockup Flow</p>
-                  <p className="text-sm font-bold text-slate-900">{t.flow}</p>
-                </div>
-              </div>
             </div>
           </div>
         </div>

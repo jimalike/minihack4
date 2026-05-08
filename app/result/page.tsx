@@ -9,6 +9,9 @@ import { type DemoLang, loadDemoLang, saveDemoLang } from "@/lib/demo-language";
 
 const BODY_MAP_STORAGE_KEY = "office-relief-body-map";
 const PATIENT_STORAGE_KEY = "office-relief-patient-intake";
+const CARD_ONE_VIDEO_SRC = "/videos/card-1-demo.mp4";
+const CARD_TWO_VIDEO_SRC = "/videos/card-2-demo.mp4";
+const CARD_THREE_VIDEO_SRC = "/videos/card-3-demo.mp4";
 
 type BodyZoneId =
   | "front-shoulder-left"
@@ -73,7 +76,7 @@ const zoneLabels: Record<BodyZoneId, Record<DemoLang, string>> = {
 const copy = {
   TH: {
     back: "กลับไปหน้า Body Map",
-    eyebrow: "Result Mockup",
+    eyebrow: "Result",
     title: "ผลวิเคราะห์เบื้องต้น",
     headlineTop: "มีความเสี่ยงต่อ",
     headlineMain: "ออฟฟิศซินโดรม",
@@ -89,16 +92,16 @@ const copy = {
       "คำแนะนำในขั้นต้นเป็นเพียงการกายบริหารเบื้องต้น ไม่ใช่วิธีในการรักษา แนะนำให้ไปพบผู้เชี่ยวชาญในการรักษา",
     exercises: [
       {
-        title: "ยืดคอและบ่าเบา ๆ",
-        body: "เหมาะสำหรับใส่วิดีโอสาธิตการยืดคอและบ่าในขั้นถัดไป",
+        title: "เอียงศีรษะไปด้านข้าง",
+        body: "ใช้มือช่วยดึงยืด ทำสลับซ้ายขวา ค้าง 10 วินาที ทำ 5 รอบ",
       },
       {
-        title: "หมุนไหล่และเปิดอก",
-        body: "เหมาะสำหรับใส่วิดีโอสาธิตการหมุนไหล่และเปิดอกในขั้นถัดไป",
+        title: "ยืดแขนไปฝั่งตรงข้าม",
+        body: "ใช้มือช่วยดึงยืด ทำสลับซ้ายขวา ค้าง 10 วินาที ทำ 5 รอบ",
       },
       {
-        title: "พักเปลี่ยนอิริยาบถระหว่างวัน",
-        body: "เหมาะสำหรับใส่วิดีโอหรือ motion guide เรื่องการเปลี่ยนอิริยาบถ",
+        title: "ประสานมือแล้วยืดแขนขึ้นด้านบน",
+        body: "ให้รู้สึกตึงช่วงหัวไหล่ ค้าง 10 วินาที ทำ 5 รอบ",
       },
       {
         title: "ยืดหลังและสะบัก",
@@ -107,7 +110,7 @@ const copy = {
     ],
     videoReady: "พื้นที่สำหรับวิดีโอท่ากายภาพ",
     nextTitle: "สิ่งที่ควรทำต่อ",
-    nextItems: ["สังเกตว่าปวดลดลงหรือไม่หลังพักและยืดเบา ๆ", "ถ้าอาการปวดต่อเนื่องหรือมากขึ้น ควรปรึกษาผู้เชี่ยวชาญด้านสุขภาพ", "ใช้ผลหน้านี้เป็น mockup ของผลวินิจฉัยจากเอเจนท์ก่อน"],
+    nextItems: ["สังเกตว่าปวดลดลงหรือไม่หลังพักและยืดเบา ๆ", "ถ้าอาการปวดต่อเนื่องหรือมากขึ้น ควรปรึกษาผู้เชี่ยวชาญด้านสุขภาพ", "ใช้ผลหน้านี้เป็นตัวอย่างผลวินิจฉัยเบื้องต้นจากเอเจนท์"],
     restart: "กลับไปเลือกตำแหน่งใหม่",
     home: "กลับหน้าแรก",
     patientLabel: "ผู้ใช้งาน",
@@ -119,14 +122,14 @@ const copy = {
   },
   EN: {
     back: "Back to Body Map",
-    eyebrow: "Result Mockup",
+    eyebrow: "Result",
     title: "Preliminary result",
     headlineTop: "Potential risk of",
     headlineMain: "OFFICE SYNDROME",
     intro: "Based on your reported symptoms and selected pain areas, the system prepared a preliminary summary to support your next steps.",
     introFallback: "The system prepared a preliminary summary from the information you provided to support your next steps.",
     therapyTitle: "We have prepared these physical therapy poses for you:",
-    summary: "Summary used for this mock assessment",
+    summary: "Summary used for this preliminary assessment",
     selectedAreas: "Reported pain areas",
     noAreas: "No pain areas were saved from the Body Map yet",
     riskTitle: "Initial risk level",
@@ -135,16 +138,16 @@ const copy = {
       "These early suggestions are only basic exercise guidance and are not a treatment method. Please consult a qualified specialist for treatment.",
     exercises: [
       {
-        title: "Gentle neck and shoulder stretch",
-        body: "Reserved for a future demo video showing a gentle neck and shoulder stretch.",
+        title: "Side neck tilt stretch",
+        body: "Use your hand to assist the stretch. Alternate left and right, hold for 10 seconds, repeat 5 times.",
       },
       {
-        title: "Shoulder roll and chest opening",
-        body: "Reserved for a future demo video showing shoulder roll and chest opening.",
+        title: "Cross-body arm stretch",
+        body: "Use the opposite hand to assist the stretch. Alternate left and right, hold for 10 seconds, repeat 5 times.",
       },
       {
-        title: "Posture break during the day",
-        body: "Reserved for a future clip or motion guide about posture breaks.",
+        title: "Hands clasped overhead stretch",
+        body: "Raise both arms overhead until you feel tension around the shoulders. Hold for 10 seconds, repeat 5 times.",
       },
       {
         title: "Upper back and scapular stretch",
@@ -153,7 +156,7 @@ const copy = {
     ],
     videoReady: "Space reserved for future exercise video",
     nextTitle: "Recommended next steps",
-    nextItems: ["Observe whether pain improves after rest and gentle stretching", "Consult a health professional if symptoms continue or worsen", "Use this page as a mockup of the future agent-generated result"],
+    nextItems: ["Observe whether pain improves after rest and gentle stretching", "Consult a health professional if symptoms continue or worsen", "Use this page as a sample preliminary result from the agent"],
     restart: "Choose pain areas again",
     home: "Back to home",
     patientLabel: "User",
@@ -359,11 +362,46 @@ export default function ResultPage() {
                             {t.videoReady}
                           </span>
                         </div>
-                        <div className="mt-5 flex aspect-[4/3] items-center justify-center rounded-[24px] border border-white/70 bg-white/65 backdrop-blur">
-                          <div className="text-center">
-                            <div className="mx-auto h-14 w-14 rounded-full bg-teal-500/15 ring-8 ring-teal-500/10 transition duration-500 group-hover:scale-110 group-hover:ring-teal-500/20" />
-                            <p className="mt-4 text-sm font-black uppercase tracking-[0.18em] text-slate-500">Motion Card</p>
-                          </div>
+                        <div className="mt-5 flex aspect-[4/3] items-center justify-center overflow-hidden rounded-[24px] border border-teal-100 bg-slate-950/5 backdrop-blur">
+                          {index === 0 ? (
+                            <video
+                              autoPlay
+                              className="h-full w-full object-contain"
+                              controls
+                              loop
+                              muted
+                              playsInline
+                            >
+                              <source src={CARD_ONE_VIDEO_SRC} type="video/mp4" />
+                            </video>
+                          ) : index === 1 ? (
+                            <video
+                              autoPlay
+                              className="h-full w-full object-contain"
+                              controls
+                              loop
+                              muted
+                              playsInline
+                            >
+                              <source src={CARD_TWO_VIDEO_SRC} type="video/mp4" />
+                            </video>
+                          ) : index === 2 ? (
+                            <video
+                              autoPlay
+                              className="h-full w-full object-contain"
+                              controls
+                              loop
+                              muted
+                              playsInline
+                            >
+                              <source src={CARD_THREE_VIDEO_SRC} type="video/mp4" />
+                            </video>
+                          ) : (
+                            <div className="text-center">
+                              <div className="mx-auto h-14 w-14 rounded-full bg-teal-500/15 ring-8 ring-teal-500/10 transition duration-500 group-hover:scale-110 group-hover:ring-teal-500/20" />
+                              <p className="mt-4 text-sm font-black uppercase tracking-[0.18em] text-slate-500">Motion Card</p>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>

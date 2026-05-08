@@ -75,7 +75,7 @@ const zones: BodyZone[] = [
 const copy = {
   TH: {
     back: "กลับไปหน้า Assessment",
-    eyebrow: "Body Map Mockup",
+    eyebrow: "Body Map",
     title: "เลือกตำแหน่งที่มีอาการปวดบนสรีระร่างกาย",
     body: "หน้านี้ใช้ SVG ที่คลิกได้เพื่อให้ hover เปลี่ยนสี เลือกทีละส่วน และบันทึกค่าที่เลือกได้ง่าย เพื่อใช้เป็นข้อมูลตั้งต้นใน flow ของเดโม",
     noteTitle: "หมายเหตุสำคัญ",
@@ -98,7 +98,7 @@ const copy = {
   },
   EN: {
     back: "Back to Assessment",
-    eyebrow: "Body Map Mockup",
+    eyebrow: "Body Map",
     title: "Select the body areas where pain is present",
     body: "This page uses a clickable SVG body map so each area can highlight on hover, be selected individually, and then be saved as part of the demo flow.",
     noteTitle: "Important note",
