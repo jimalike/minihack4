@@ -218,7 +218,7 @@ function Navbar({
           </div>
 
           <Button asChild size="sm" className="hidden rounded-full bg-teal-600 hover:bg-teal-700 sm:inline-flex">
-            <a href="/scan">
+            <a href="/login">
               {t(lang, "ctaPrimary")}
               <ArrowRight size={14} />
             </a>
@@ -272,7 +272,7 @@ function Hero({ lang }: { lang: Lang }) {
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Button asChild size="lg" className="rounded-2xl bg-teal-600 px-6 hover:bg-teal-700">
-              <a href="/scan">
+              <a href="/login">
                 {t(lang, "ctaPrimary")}
                 <ArrowRight size={16} />
               </a>

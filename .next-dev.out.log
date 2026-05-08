@@ -88,3 +88,79 @@
  GET /api/profile 200 in 9ms
  GET / 200 in 58ms
  GET / 200 in 55ms
+ GET /scan 200 in 45ms
+ GET /api/profile 200 in 13ms
+ GET /api/profile 200 in 12ms
+ GET / 200 in 53ms
+ GET /scan 200 in 47ms
+ GET /api/profile 200 in 10ms
+ GET /api/profile 200 in 11ms
+ GET / 200 in 25ms
+ GET /scan 200 in 44ms
+ GET /api/profile 200 in 11ms
+ GET /api/profile 200 in 11ms
+ GET / 200 in 51ms
+ GET /scan 200 in 47ms
+ GET /api/profile 200 in 10ms
+ GET /api/profile 200 in 11ms
+ GET / 200 in 49ms
+ GET /scan 200 in 41ms
+ GET /api/profile 200 in 15ms
+ GET /api/profile 200 in 14ms
+ GET /persona 200 in 65ms
+ GET /scan 200 in 48ms
+ GET /api/profile 200 in 11ms
+ GET /api/profile 200 in 13ms
+ GET /persona 200 in 57ms
+ GET /scan 200 in 44ms
+ GET /api/profile 200 in 10ms
+ GET /api/profile 200 in 9ms
+ GET /persona 200 in 65ms
+ GET /scan 200 in 53ms
+ GET /api/profile 200 in 11ms
+ GET /api/profile 200 in 12ms
+ ✓ Compiled /_not-found in 691ms (510 modules)
+ ✓ Compiled in 114ms (263 modules)
+ ✓ Compiled in 109ms (496 modules)
+ GET /scan 404 in 81ms
+ ✓ Compiled in 388ms (493 modules)
+ ✓ Compiled /scan in 203ms (501 modules)
+ ✓ Compiled /login in 225ms (519 modules)
+ GET / 200 in 83ms
+ GET /scan 200 in 38ms
+ ✓ Compiled /persona in 208ms (533 modules)
+ ✓ Compiled in 400ms (547 modules)
+ GET /login 200 in 80ms
+ GET /persona 200 in 32ms
+ GET /login 200 in 34ms
+ GET / 200 in 54ms
+ GET /login 200 in 57ms
+ GET /login 200 in 38ms
+ GET / 200 in 54ms
+ GET /persona 200 in 18ms
+ GET / 200 in 42ms
+ GET /login 200 in 43ms
+ ✓ Compiled in 646ms (547 modules)
+ GET /persona 200 in 80ms
+ ✓ Compiled /assessment in 240ms (545 modules)
+ GET /assessment 200 in 381ms
+ GET /persona 200 in 40ms
+ GET /persona 200 in 27ms
+ GET /login 200 in 42ms
+ GET / 200 in 54ms
+ GET /login 200 in 41ms
+ GET / 200 in 48ms
+ GET /login 200 in 48ms
+ GET / 200 in 45ms
+ ✓ Compiled in 530ms (547 modules)
+ GET /login 200 in 84ms
+ ✓ Compiled in 179ms (278 modules)
+ ✓ Compiled in 175ms (533 modules)
+ ✓ Compiled /assessment in 469ms (547 modules)
+ GET /assessment 200 in 630ms
+ ✓ Compiled in 449ms (561 modules)
+ GET /login 200 in 73ms
+ GET /persona 200 in 83ms
+ GET /login 200 in 49ms
+ GET /persona 200 in 52ms
+ GET /persona 200 in 69ms
