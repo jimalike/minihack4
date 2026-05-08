@@ -206,3 +206,102 @@
  ✓ Compiled in 416ms (561 modules)
  GET /assessment 200 in 82ms
  GET /login 200 in 55ms
+ ✓ Compiled in 421ms (561 modules)
+ ✓ Compiled in 908ms (547 modules)
+ ○ Compiling /body-map ...
+ ✓ Compiled /body-map in 600ms (561 modules)
+ GET /body-map 200 in 814ms
+ GET /body-map 200 in 64ms
+ ✓ Compiled in 711ms (562 modules)
+ GET /body-map 200 in 97ms
+ ✓ Compiled in 386ms (562 modules)
+ ✓ Compiled in 394ms (562 modules)
+ ✓ Compiled in 188ms (284 modules)
+ ✓ Compiled /_not-found in 449ms (537 modules)
+ GET /body-map 404 in 64ms
+ ✓ Compiled /body-map in 724ms (548 modules)
+ GET /body-map 200 in 76ms
+ ✓ Compiled in 497ms (564 modules)
+ GET /body-map 200 in 70ms
+ GET /assessment 200 in 51ms
+ GET /body-map 200 in 46ms
+ GET /assessment 200 in 31ms
+ GET /persona 200 in 55ms
+ GET /login 200 in 30ms
+ ✓ Compiled / in 189ms (286 modules)
+ GET / 200 in 344ms
+ ✓ Compiled in 466ms (573 modules)
+ ✓ Compiled in 335ms (573 modules)
+ ✓ Compiled in 524ms (573 modules)
+ GET / 200 in 80ms
+ GET / 200 in 63ms
+ GET / 200 in 40ms
+ GET /login 200 in 66ms
+ GET /body-map 200 in 60ms
+ GET /assessment 200 in 47ms
+ GET /persona 200 in 65ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 931ms (564 modules)
+ GET /assessment 404 in 78ms
+ ○ Compiling /assessment ...
+ ✓ Compiled /assessment in 850ms (559 modules)
+ GET /assessment 200 in 88ms
+ GET /assessment 200 in 66ms
+ GET /persona 200 in 62ms
+ GET /login 200 in 48ms
+ GET / 200 in 62ms
+ GET /login 200 in 39ms
+ GET / 200 in 62ms
+ GET /login 200 in 32ms
+ GET /body-map 200 in 47ms
+ ✓ Compiled in 652ms (573 modules)
+ GET /body-map 200 in 77ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 1313ms (560 modules)
+ GET /body-map 404 in 126ms
+ ○ Compiling /body-map ...
+ ✓ Compiled /body-map in 988ms (559 modules)
+ ✓ Compiled /_not-found in 248ms (576 modules)
+ GET /camera 404 in 70ms
+ GET /body-map 200 in 47ms
+ GET /camera 404 in 54ms
+ GET /body-map 200 in 31ms
+ GET /camera 404 in 43ms
+ GET /body-map 200 in 61ms
+ ✓ Compiled in 515ms (562 modules)
+ GET /body-map 200 in 91ms
+ ✓ Compiled /camera in 394ms (570 modules)
+ GET /camera 200 in 548ms
+ GET /body-map 200 in 61ms
+ GET /assessment 200 in 55ms
+ ✓ Compiled in 304ms (294 modules)
+ ✓ Compiled in 189ms (287 modules)
+ ✓ Compiled in 449ms (565 modules)
+ ✓ Compiled in 573ms (551 modules)
+ ✓ Compiled /_not-found in 754ms (554 modules)
+ GET /persona 404 in 69ms
+ ○ Compiling /persona ...
+ ✓ Compiled /persona in 894ms (553 modules)
+ ✓ Compiled in 178ms (284 modules)
+ ✓ Compiled /_not-found in 433ms (546 modules)
+ GET /assessment 404 in 75ms
+ ✓ Compiled /assessment in 814ms (553 modules)
+ ✓ Compiled in 529ms (551 modules)
+ GET / 200 in 93ms
+ ✓ Compiled /login in 408ms (553 modules)
+ GET /login 200 in 623ms
+ GET /login 200 in 39ms
+ ✓ Compiled /_not-found in 258ms (556 modules)
+ GET /body-map 404 in 374ms
+ GET /assessment 200 in 102ms
+ ✓ Compiled in 590ms (544 modules)
+ ✓ Compiled in 512ms (550 modules)
+ ✓ Compiled in 636ms (536 modules)
+ ✓ Compiled /body-map in 278ms (274 modules)
+ ✓ Compiled in 322ms (281 modules)
+ GET /assessment 200 in 775ms
+ GET /login 200 in 986ms
+ GET /camera 200 in 798ms
+ GET /body-map 200 in 797ms
+ GET /persona 200 in 817ms
+ GET /persona 200 in 44ms

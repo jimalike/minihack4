@@ -2,6 +2,7 @@
 
 import {
   Activity,
+  AlertTriangle,
   ArrowRight,
   Camera,
   ChevronDown,
@@ -60,6 +61,8 @@ const copy = {
     headline3: "and track recovery at home",
     sub:
       "The app offers an initial office-syndrome assessment from questionnaires and a limited set of guided movements. It is meant to suggest patterns, support basic exercise guidance, and help users decide whether to keep monitoring or consult a doctor.",
+    disclaimer:
+      "This app provides preliminary office syndrome risk screening only and does not diagnose disease.",
     ctaPrimary: "Open demo",
     footer: "Prototype landing page for therapy and office syndrome screening",
     stats: [
@@ -233,6 +236,10 @@ function Hero({ lang }: { lang: Lang }) {
   const stats = t(lang, "stats") as Array<{ label: string; value: string; tone: "teal" | "cyan" | "slate" }>;
   const bodyMapItems = t(lang, "bodyMapItems") as string[];
   const timelineItems = t(lang, "timelineItems") as string[];
+  const disclaimer =
+    lang === "TH"
+      ? "แอปนี้ไม่ใช่เครื่องมือวินิจฉัยโรค หากปวดรุนแรง ปวดร้าว ชา อ่อนแรง หรือมีอาการต่อเนื่อง ควรปรึกษาผู้เชี่ยวชาญด้านสุขภาพ"
+      : t(lang, "disclaimer");
 
   return (
     <section className="relative overflow-hidden px-4 pb-20 pt-28 sm:px-6 sm:pb-28 sm:pt-32 lg:px-8">
@@ -269,6 +276,22 @@ function Hero({ lang }: { lang: Lang }) {
           <p className="mt-5 max-w-2xl text-base font-medium leading-8 text-slate-600 sm:text-lg">
             {t(lang, "sub")}
           </p>
+
+          <div className="mt-5 max-w-2xl rounded-[24px] border border-amber-200 bg-gradient-to-r from-amber-50 via-yellow-50 to-orange-50 px-4 py-4 shadow-sm">
+            <div className="flex items-start gap-3">
+              <div className="rounded-2xl bg-white p-2.5 text-amber-600 shadow-sm">
+                <AlertTriangle size={18} />
+              </div>
+              <div>
+                <p className="text-[11px] font-black uppercase tracking-[0.16em] text-amber-700">
+                  {lang === "TH" ? "หมายเหตุ" : "Disclaimer"}
+                </p>
+                <p className="mt-2 text-sm font-semibold leading-7 text-amber-950">
+                  {disclaimer}
+                </p>
+              </div>
+            </div>
+          </div>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Button asChild size="lg" className="rounded-2xl bg-teal-600 px-6 hover:bg-teal-700">

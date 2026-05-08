@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { type DemoLang, loadDemoLang, saveDemoLang } from "@/lib/demo-language";
 
 const STORAGE_KEY = "office-relief-patient-intake";
 
@@ -21,35 +22,122 @@ type PatientIntake = {
   lastName?: string;
   age: string;
   gender: "male" | "female" | "other";
-  workDevice: "desktop" | "laptop" | "tablet";
-  workStyle: "sit" | "stand" | "mixed";
-  dominantHand: "right" | "left" | "both";
 };
 
 type Answer = "yes" | "no" | null;
 
-const SCREENING_QUESTIONS = [
-  "ในช่วงนี้คุณมีอาการวิงเวียนศีรษะ ปวดหัว หรือมองไม่ชัด โดยไม่ทราบสาเหตุหรือไม่",
-  "คุณรับประทานยาในกลุ่มควบคุมความดัน หรือยาที่เกี่ยวข้องกับโรคหัวใจอยู่หรือไม่",
-  "คุณมีอาการเหนื่อยหอบง่าย เจ็บหน้าอก หรือแน่นหน้าอก ระหว่างการขึ้นลงบันไดหรือไม่",
-] as const;
+const copy = {
+  TH: {
+    back: "กลับไปหน้า Patient Profile",
+    eyebrow: "Screening Gate",
+    title: "แบบคัดกรองก่อนเริ่มประเมินอาการ",
+    body:
+      "เนื่องจากเรายังไม่มีอุปกรณ์สำหรับวัดความดันหรือประเมินภาวะเสี่ยงเฉพาะทางในระบบ จึงต้องมีคำถามคัดกรองก่อนทุกครั้ง หากเข้าข่ายความเสี่ยง ระบบจะไม่พาไปขั้นตอนถัดไป",
+    primary: "Primary Action",
+    primaryTitle: "เริ่มตอบคำถามคัดกรอง",
+    primaryBody:
+      "หากตอบว่า “ใช่” ในข้อใดข้อหนึ่ง ระบบจะปฏิเสธไม่ให้ไปขั้นตอนถัดไป และพากลับไปหน้าแรกเพื่อความปลอดภัย",
+    step1: "Login",
+    step2: "Patient Profile",
+    step3: "Assessment",
+    waitingTitle: "รอคำตอบให้ครบทั้ง 3 ข้อ",
+    waitingBody: "เมื่อคุณตอบครบ ระบบจะสรุปให้ทันทีว่าสามารถไปขั้นตอนต่อไปได้หรือไม่",
+    passTitle: "ผ่านการคัดกรองเบื้องต้น",
+    passBody: "สามารถไปขั้นตอนถัดไปของการประเมินอาการได้",
+    next: "ไปขั้นตอนถัดไป",
+    previous: "กลับไปหน้าเดิม",
+    summary: "Quick Summary",
+    patientName: "ชื่อผู้ป่วย",
+    age: "อายุ",
+    gender: "เพศ",
+    rejectTitle: "เงื่อนไขการปฏิเสธ",
+    rejectBody:
+      "ถ้าผู้ใช้มีอาการตามคำถามคัดกรอง หรือมีประวัติใช้ยาที่เกี่ยวข้องกับความดันและโรคหัวใจ เราจะไม่พาไปขั้นตอนประเมินอาการต่อ เพราะยังไม่มีอุปกรณ์ในระบบสำหรับคัดแยกความเสี่ยงกลุ่มนี้",
+    popupTitle: "ไม่สามารถไปขั้นตอนถัดไปได้",
+    popupBody: "พบคำตอบที่เข้าข่ายความเสี่ยงจากแบบคัดกรอง ระบบจะหยุด flow การประเมินไว้ก่อน และพากลับไปหน้าแรกสุด",
+    popupCountdown: "กำลังกลับไปหน้าแรกใน 10 วินาที...",
+    popupButton: "กลับหน้าแรก",
+    yes: "ใช่",
+    no: "ไม่ใช่",
+    question: "Question",
+    q1: "ในช่วงนี้คุณมีอาการวิงเวียนศีรษะ ปวดหัว หรือมองไม่ชัด โดยไม่ทราบสาเหตุหรือไม่",
+    q2: "คุณรับประทานยาในกลุ่มควบคุมความดัน หรือยาที่เกี่ยวข้องกับโรคหัวใจอยู่หรือไม่",
+    q3: "คุณมีอาการเหนื่อยหอบง่าย เจ็บหน้าอก หรือแน่นหน้าอก ระหว่างการขึ้นลงบันไดหรือไม่",
+  },
+  EN: {
+    back: "Back to Patient Profile",
+    eyebrow: "Screening Gate",
+    title: "Pre-screening before the assessment starts",
+    body:
+      "Because the current demo does not include blood-pressure devices or specialized screening tools, these basic safety questions must be answered first. If a risk answer appears, the user cannot continue.",
+    primary: "Primary Action",
+    primaryTitle: "Answer the screening questions",
+    primaryBody:
+      "If the user answers “Yes” to any item, the system blocks the next step and returns to the home page for safety.",
+    step1: "Login",
+    step2: "Patient Profile",
+    step3: "Assessment",
+    waitingTitle: "Please answer all 3 questions",
+    waitingBody: "Once all answers are complete, the system will immediately determine whether the flow can continue.",
+    passTitle: "Passed the initial screening",
+    passBody: "You can continue to the next assessment step.",
+    next: "Continue",
+    previous: "Go back",
+    summary: "Quick Summary",
+    patientName: "Patient name",
+    age: "Age",
+    gender: "Gender",
+    rejectTitle: "Rejection Rule",
+    rejectBody:
+      "If the user reports these symptoms or uses medication related to blood pressure or heart disease, the demo should stop here because the system does not yet include the tools required to safely triage that group.",
+    popupTitle: "Cannot continue to the next step",
+    popupBody: "A risk-related answer was found in the screening form. The assessment flow will stop here and return to the home page.",
+    popupCountdown: "Returning to home in 10 seconds...",
+    popupButton: "Back to home",
+    yes: "Yes",
+    no: "No",
+    question: "Question",
+    q1: "Have you recently had dizziness, headaches, or blurred vision without a clear cause?",
+    q2: "Are you currently taking blood pressure medication or medication related to heart disease?",
+    q3: "Do you get easily short of breath, chest pain, or chest tightness while going up or down stairs?",
+  },
+} as const;
 
 export default function AssessmentPage() {
   const router = useRouter();
+  const [lang, setLang] = useState<DemoLang>("TH");
   const [savedProfile, setSavedProfile] = useState<PatientIntake | null>(null);
   const [answers, setAnswers] = useState<Answer[]>([null, null, null]);
   const [redirecting, setRedirecting] = useState(false);
   const [showRiskPopup, setShowRiskPopup] = useState(false);
 
   useEffect(() => {
+    setLang(loadDemoLang());
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return;
     try {
-      setSavedProfile(JSON.parse(raw) as PatientIntake);
+      const parsed = JSON.parse(raw) as Partial<PatientIntake>;
+      setSavedProfile({
+        firstName: typeof parsed.firstName === "string" ? parsed.firstName : "",
+        lastName: typeof parsed.lastName === "string" ? parsed.lastName : "",
+        age: typeof parsed.age === "string" ? parsed.age : "",
+        gender:
+          parsed.gender === "male" || parsed.gender === "female" || parsed.gender === "other"
+            ? parsed.gender
+            : "female",
+      });
     } catch {
       // ignore malformed local data
     }
   }, []);
+
+  const setLanguage = (value: DemoLang) => {
+    setLang(value);
+    saveDemoLang(value);
+  };
+
+  const t = copy[lang];
+  const questions = [t.q1, t.q2, t.q3];
 
   const allAnswered = answers.every((answer) => answer !== null);
   const hasRiskAnswer = answers.some((answer) => answer === "yes");
@@ -74,18 +162,38 @@ export default function AssessmentPage() {
   return (
     <div className="min-h-screen bg-[#f4f8fb] px-4 py-8 text-slate-900 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        <a href="/persona" className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 transition hover:text-slate-800">
-          <ArrowLeft size={14} />
-          กลับไปหน้า Patient Profile
-        </a>
+        <div className="flex items-center justify-between gap-4">
+          <a
+            href="/persona"
+            className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 transition hover:text-slate-800"
+          >
+            <ArrowLeft size={14} />
+            {t.back}
+          </a>
+          <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white p-1 shadow-sm">
+            {(["TH", "EN"] as DemoLang[]).map((item) => (
+              <button
+                key={item}
+                type="button"
+                onClick={() => setLanguage(item)}
+                className={cn(
+                  "rounded-full px-4 py-2 text-sm font-bold transition",
+                  lang === item ? "bg-teal-600 text-white" : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
+                )}
+              >
+                {item}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <div className="mt-6 overflow-hidden rounded-[36px] border border-white/80 bg-white/92 shadow-[0_24px_70px_rgba(15,23,42,0.10)] backdrop-blur-sm">
           <div className="border-b border-slate-100 bg-gradient-to-r from-teal-50 via-white to-cyan-50 px-8 py-6 sm:px-10">
             <div className="flex flex-wrap items-center gap-3">
               {[
-                { step: "1", label: "Login", active: false },
-                { step: "2", label: "Patient Profile", active: false },
-                { step: "3", label: "Assessment", active: true },
+                { step: "1", label: t.step1, active: false },
+                { step: "2", label: t.step2, active: false },
+                { step: "3", label: t.step3, active: true },
               ].map((item, index) => (
                 <div key={item.step} className="flex items-center gap-3">
                   <div
@@ -111,14 +219,9 @@ export default function AssessmentPage() {
 
             <div className="mt-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div className="max-w-3xl">
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-teal-600">Screening Gate</p>
-                <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
-                  แบบคัดกรองก่อนเริ่มประเมินอาการ
-                </h1>
-                <p className="mt-3 text-sm font-medium leading-7 text-slate-600 sm:text-base">
-                  เนื่องจากเรายังไม่มีอุปกรณ์สำหรับวัดความดันหรือประเมินภาวะเสี่ยงเฉพาะทางในระบบ
-                  จึงต้องมีคำถามคัดกรองก่อนทุกครั้ง หากเข้าข่ายความเสี่ยง ระบบจะไม่พาไปขั้นตอนถัดไป
-                </p>
+                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-teal-600">{t.eyebrow}</p>
+                <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">{t.title}</h1>
+                <p className="mt-3 text-sm font-medium leading-7 text-slate-600 sm:text-base">{t.body}</p>
               </div>
 
               <div className="rounded-3xl bg-white p-4 text-teal-700 shadow-sm">
@@ -135,20 +238,19 @@ export default function AssessmentPage() {
                     <HeartPulse size={22} />
                   </div>
                   <div>
-                    <p className="text-[11px] font-black uppercase tracking-[0.16em] text-white/75">Primary Action</p>
-                    <h2 className="mt-2 text-2xl font-black">เริ่มตอบคำถามคัดกรอง</h2>
-                    <p className="mt-3 text-sm font-medium leading-7 text-white/85">
-                      หากตอบว่า “ใช่” ในข้อใดข้อหนึ่ง ระบบจะปฏิเสธไม่ให้ไปขั้นตอนถัดไป และพากลับไปหน้าเดิมเพื่อความปลอดภัย
-                    </p>
+                    <p className="text-[11px] font-black uppercase tracking-[0.16em] text-white/75">{t.primary}</p>
+                    <h2 className="mt-2 text-2xl font-black">{t.primaryTitle}</h2>
+                    <p className="mt-3 text-sm font-medium leading-7 text-white/85">{t.primaryBody}</p>
                   </div>
                 </div>
               </div>
 
-              {SCREENING_QUESTIONS.map((question, index) => (
+              {questions.map((question, index) => (
                 <QuestionCard
                   answer={answers[index]}
                   index={index}
                   key={question}
+                  lang={lang}
                   onAnswer={(value) =>
                     setAnswers((current) => current.map((item, itemIndex) => (itemIndex === index ? value : item)))
                   }
@@ -159,61 +261,51 @@ export default function AssessmentPage() {
               <div
                 className={cn(
                   "rounded-[28px] border p-5",
-                  canContinue
-                    ? "border-emerald-200 bg-emerald-50"
-                    : "border-slate-200 bg-slate-50",
+                  canContinue ? "border-emerald-200 bg-emerald-50" : "border-slate-200 bg-slate-50",
                 )}
               >
                 {canContinue ? (
                   <div className="flex gap-3">
                     <CheckCircle2 className="mt-0.5 text-emerald-600" size={20} />
                     <div>
-                      <h3 className="text-base font-black text-emerald-700">ผ่านการคัดกรองเบื้องต้น</h3>
-                      <p className="mt-2 text-sm font-medium leading-7 text-emerald-700">
-                        สามารถไปขั้นตอนถัดไปของการประเมินอาการได้
-                      </p>
+                      <h3 className="text-base font-black text-emerald-700">{t.passTitle}</h3>
+                      <p className="mt-2 text-sm font-medium leading-7 text-emerald-700">{t.passBody}</p>
                     </div>
                   </div>
                 ) : (
                   <div>
-                    <h3 className="text-base font-black text-slate-800">รอคำตอบให้ครบทั้ง 3 ข้อ</h3>
-                    <p className="mt-2 text-sm font-medium leading-7 text-slate-600">
-                      เมื่อคุณตอบครบ ระบบจะสรุปให้ทันทีว่าสามารถไปขั้นตอนต่อไปได้หรือไม่
-                    </p>
+                    <h3 className="text-base font-black text-slate-800">{t.waitingTitle}</h3>
+                    <p className="mt-2 text-sm font-medium leading-7 text-slate-600">{t.waitingBody}</p>
                   </div>
                 )}
               </div>
 
               <div className="flex flex-col gap-3 sm:flex-row">
                 <Button asChild className="h-12 rounded-2xl bg-teal-600 px-6 hover:bg-teal-700" disabled={!canContinue}>
-                  <a href="/persona">
-                    ไปขั้นตอนถัดไป
+                  <a href="/body-map">
+                    {t.next}
                     <ArrowRight size={16} />
                   </a>
                 </Button>
                 <Button asChild className="h-12 rounded-2xl px-6" variant="outline">
-                  <a href="/persona">กลับไปหน้าเดิม</a>
+                  <a href="/persona">{t.previous}</a>
                 </Button>
               </div>
             </section>
 
             <aside className="space-y-5">
               <div className="rounded-[28px] border border-slate-200 bg-slate-50 p-6">
-                <p className="text-xs font-black uppercase tracking-[0.14em] text-slate-500">Quick Summary</p>
+                <p className="text-xs font-black uppercase tracking-[0.14em] text-slate-500">{t.summary}</p>
                 <div className="mt-4 space-y-3">
-                  <SummaryItem label="ชื่อผู้ป่วย" value={patientName} />
-                  <SummaryItem label="อายุ" value={savedProfile?.age || "-"} />
-                  <SummaryItem label="อุปกรณ์หลัก" value={savedProfile ? deviceText(savedProfile.workDevice) : "-"} />
-                  <SummaryItem label="ลักษณะงาน" value={savedProfile ? workStyleText(savedProfile.workStyle) : "-"} />
+                  <SummaryItem label={t.patientName} value={patientName} />
+                  <SummaryItem label={t.age} value={savedProfile?.age || "-"} />
+                  <SummaryItem label={t.gender} value={savedProfile ? genderText(savedProfile.gender, lang) : "-"} />
                 </div>
               </div>
 
               <div className="rounded-[28px] border border-amber-100 bg-amber-50 p-6">
-                <p className="text-xs font-black uppercase tracking-[0.14em] text-amber-700">เงื่อนไขการปฏิเสธ</p>
-                <p className="mt-3 text-sm font-medium leading-7 text-amber-900">
-                  ถ้าผู้ใช้มีอาการตามคำถามคัดกรอง หรือมีประวัติใช้ยาที่เกี่ยวข้องกับความดันและโรคหัวใจ
-                  เราจะไม่พาไปขั้นตอนประเมินอาการต่อ เพราะยังไม่มีอุปกรณ์ในระบบสำหรับคัดแยกความเสี่ยงกลุ่มนี้
-                </p>
+                <p className="text-xs font-black uppercase tracking-[0.14em] text-amber-700">{t.rejectTitle}</p>
+                <p className="mt-3 text-sm font-medium leading-7 text-amber-900">{t.rejectBody}</p>
               </div>
             </aside>
           </div>
@@ -228,21 +320,16 @@ export default function AssessmentPage() {
                 <AlertTriangle size={22} />
               </div>
               <div>
-                <h2 className="text-xl font-black text-rose-700">ไม่สามารถไปขั้นตอนถัดไปได้</h2>
-                <p className="mt-3 text-sm font-medium leading-7 text-slate-700">
-                  พบคำตอบที่เข้าข่ายความเสี่ยงจากแบบคัดกรอง ระบบจะหยุด flow การประเมินไว้ก่อน
-                  และพากลับไปหน้าแรกสุด
-                </p>
-                {redirecting ? (
-                  <p className="mt-3 text-sm font-bold text-rose-700">กำลังกลับไปหน้าแรกใน 10 วินาที...</p>
-                ) : null}
+                <h2 className="text-xl font-black text-rose-700">{t.popupTitle}</h2>
+                <p className="mt-3 text-sm font-medium leading-7 text-slate-700">{t.popupBody}</p>
+                {redirecting ? <p className="mt-3 text-sm font-bold text-rose-700">{t.popupCountdown}</p> : null}
                 <div className="mt-5">
                   <Button
                     className="h-11 rounded-2xl bg-rose-600 px-5 hover:bg-rose-700"
                     onClick={() => router.push("/")}
                     type="button"
                   >
-                    กลับหน้าแรก
+                    {t.popupButton}
                   </Button>
                 </div>
               </div>
@@ -259,15 +346,19 @@ function QuestionCard({
   question,
   answer,
   onAnswer,
+  lang,
 }: {
   index: number;
   question: string;
   answer: Answer;
   onAnswer: (value: Answer) => void;
+  lang: DemoLang;
 }) {
   return (
     <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
-      <p className="text-xs font-black uppercase tracking-[0.14em] text-teal-600">Question {index + 1}</p>
+      <p className="text-xs font-black uppercase tracking-[0.14em] text-teal-600">
+        {lang === "TH" ? "คำถาม" : "Question"} {index + 1}
+      </p>
       <h2 className="mt-3 text-lg font-black leading-8 text-slate-900">{question}</h2>
       <div className="mt-5 flex flex-col gap-3 sm:flex-row">
         <button
@@ -280,7 +371,7 @@ function QuestionCard({
           onClick={() => onAnswer("yes")}
           type="button"
         >
-          ใช่
+          {lang === "TH" ? "ใช่" : "Yes"}
         </button>
         <button
           className={cn(
@@ -292,7 +383,7 @@ function QuestionCard({
           onClick={() => onAnswer("no")}
           type="button"
         >
-          ไม่ใช่
+          {lang === "TH" ? "ไม่ใช่" : "No"}
         </button>
       </div>
     </div>
@@ -308,14 +399,13 @@ function SummaryItem({ label, value }: { label: string; value: string }) {
   );
 }
 
-function deviceText(value: PatientIntake["workDevice"]) {
-  if (value === "desktop") return "Desktop";
-  if (value === "laptop") return "Laptop";
-  return "Tablet";
-}
-
-function workStyleText(value: PatientIntake["workStyle"]) {
-  if (value === "sit") return "นั่งหน้าจอต่อเนื่อง";
-  if (value === "stand") return "ยืนทำงานเป็นหลัก";
-  return "เดินสลับนั่ง";
+function genderText(value: PatientIntake["gender"], lang: DemoLang) {
+  if (lang === "EN") {
+    if (value === "male") return "Male";
+    if (value === "female") return "Female";
+    return "Other";
+  }
+  if (value === "male") return "ชาย";
+  if (value === "female") return "หญิง";
+  return "อื่น ๆ";
 }
