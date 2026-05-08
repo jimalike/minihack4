@@ -1,53 +1,90 @@
 
 > thai-safe-bite@0.1.0 dev
-> next dev -p 3000
+> next dev
 
   ▲ Next.js 14.2.35
   - Local:        http://localhost:3000
 
  ✓ Starting...
- ✓ Ready in 1800ms
+ ✓ Ready in 1449ms
  ○ Compiling / ...
- ✓ Compiled / in 4.3s (523 modules)
- GET / 200 in 4556ms
- GET / 200 in 50ms
- GET / 200 in 46ms
- GET / 200 in 86ms
- ✓ Compiled /api/profile in 210ms (283 modules)
- GET /api/profile 200 in 284ms
- GET /api/profile 200 in 289ms
- ✓ Compiled in 496ms (553 modules)
- ✓ Compiled in 426ms (523 modules)
- GET / 200 in 93ms
- ✓ Compiled /api/profile in 114ms (283 modules)
- GET /api/profile 200 in 180ms
- GET /api/profile 200 in 186ms
- ✓ Compiled in 406ms (553 modules)
- ✓ Compiled in 254ms (553 modules)
- ✓ Compiled in 351ms (553 modules)
- ✓ Compiled in 526ms (523 modules)
- ✓ Compiled in 696ms (523 modules)
- ✓ Compiled in 392ms (523 modules)
- ✓ Compiled in 413ms (523 modules)
- ✓ Compiled in 294ms (523 modules)
- ✓ Compiled in 360ms (523 modules)
- ✓ Compiled in 327ms (523 modules)
- ✓ Compiled in 345ms (523 modules)
- ✓ Compiled in 421ms (523 modules)
- ✓ Compiled in 366ms (523 modules)
- ✓ Compiled in 307ms (523 modules)
- ✓ Compiled in 213ms (523 modules)
- ✓ Compiled in 215ms (523 modules)
- ✓ Compiled in 184ms (523 modules)
- ✓ Compiled in 337ms (523 modules)
- GET / 200 in 165ms
- ✓ Compiled /api/profile in 221ms (283 modules)
- GET /api/profile 200 in 394ms
- GET /api/profile 200 in 402ms
- ✓ Compiled in 399ms (553 modules)
- ✓ Compiled in 357ms (523 modules)
- ✓ Compiled in 382ms (523 modules)
- ✓ Compiled in 158ms (270 modules)
- ✓ Compiled in 347ms (523 modules)
- ✓ Compiled in 1262ms (523 modules)
- ✓ Compiled in 320ms (270 modules)
+ ✓ Compiled / in 2.4s (503 modules)
+ GET / 200 in 2503ms
+ GET / 200 in 65ms
+ GET / 200 in 64ms
+ GET / 200 in 60ms
+ ○ Compiling /scan ...
+ ✓ Compiled /scan in 539ms (531 modules)
+ GET /scan 200 in 679ms
+ ✓ Compiled /api/profile in 123ms (288 modules)
+ GET /api/profile 200 in 187ms
+ GET /api/profile 200 in 189ms
+ GET / 200 in 100ms
+ ✓ Compiled /_not-found in 556ms (475 modules)
+ GET / 404 in 63ms
+ ✓ Compiled / in 691ms (509 modules)
+ GET / 200 in 82ms
+ GET / 200 in 53ms
+ ✓ Compiled /scan in 111ms (262 modules)
+ GET /scan 200 in 249ms
+ ✓ Compiled /api/profile in 64ms (292 modules)
+ GET /api/profile 200 in 128ms
+ GET /api/profile 200 in 131ms
+ GET / 200 in 85ms
+ GET / 200 in 48ms
+ GET / 200 in 60ms
+ GET /scan 200 in 54ms
+ GET /api/profile 200 in 15ms
+ GET /api/profile 200 in 16ms
+ GET / 200 in 41ms
+ GET /scan 200 in 46ms
+ GET /api/profile 200 in 13ms
+ GET /api/profile 200 in 11ms
+ GET / 200 in 68ms
+ GET /scan 200 in 43ms
+ GET /api/profile 200 in 11ms
+ GET /api/profile 200 in 10ms
+ GET / 200 in 74ms
+ GET /scan 200 in 72ms
+ GET /api/profile 200 in 13ms
+ GET /api/profile 200 in 13ms
+ GET / 200 in 65ms
+ GET /scan 200 in 31ms
+ GET /api/profile 200 in 12ms
+ GET /api/profile 200 in 11ms
+ GET / 200 in 40ms
+ GET /scan 200 in 76ms
+ GET /api/profile 200 in 11ms
+ GET /api/profile 200 in 10ms
+ GET / 200 in 56ms
+ GET /scan 200 in 70ms
+ GET /api/profile 200 in 13ms
+ GET /api/profile 200 in 12ms
+ GET / 200 in 57ms
+ GET /scan 200 in 48ms
+ GET / 200 in 26ms
+ ✓ Compiled in 404ms (531 modules)
+ GET / 200 in 72ms
+ ✓ Compiled in 249ms (531 modules)
+ ✓ Compiled in 379ms (531 modules)
+ GET / 200 in 72ms
+ ✓ Compiled in 828ms (537 modules)
+ GET / 200 in 140ms
+ ✓ Compiled in 402ms (537 modules)
+ GET / 200 in 99ms
+ GET /scan 200 in 68ms
+ ✓ Compiled /api/profile in 129ms (291 modules)
+ GET /api/profile 200 in 190ms
+ GET /api/profile 200 in 194ms
+ ✓ Compiled /persona in 444ms (531 modules)
+ GET /persona 200 in 584ms
+ GET /scan 200 in 76ms
+ ✓ Compiled /api/profile in 62ms (296 modules)
+ GET /api/profile 200 in 123ms
+ GET /api/profile 200 in 127ms
+ GET /persona 200 in 87ms
+ GET /scan 200 in 59ms
+ GET /api/profile 200 in 10ms
+ GET /api/profile 200 in 9ms
+ GET / 200 in 58ms
+ GET / 200 in 55ms
