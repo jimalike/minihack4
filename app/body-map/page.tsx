@@ -77,22 +77,23 @@ const copy = {
     back: "กลับไปหน้า Assessment",
     eyebrow: "Body Map Mockup",
     title: "เลือกตำแหน่งที่มีอาการปวดบนสรีระร่างกาย",
-    body: "หน้านี้ใช้ SVG ที่คลิกได้เพื่อให้ hover เปลี่ยนสี เลือกทีละส่วน และบันทึกค่าที่เลือกได้ง่าย จากนั้นสามารถไปต่อยังหน้าเปิดกล้องเพื่อเริ่มขั้นตอนถัดไปของเดโมได้",
+    body: "หน้านี้ใช้ SVG ที่คลิกได้เพื่อให้ hover เปลี่ยนสี เลือกทีละส่วน และบันทึกค่าที่เลือกได้ง่าย เพื่อใช้เป็นข้อมูลตั้งต้นใน flow ของเดโม",
     noteTitle: "หมายเหตุสำคัญ",
     noteBody:
       "ถ้ายังไม่มั่นใจว่าปวดตรงจุดไหนพอดี สามารถเลือกหลายบริเวณที่เกี่ยวข้องพร้อมกันได้ เช่น ถ้ารู้สึกปวดแถวหัวไหล่ ให้เลือกทั้งไหล่ซ้าย/ขวา หลังส่วนบน หรือแขนด้านบนร่วมกันได้ตามอาการ",
     front: "ด้านหน้า",
     backView: "ด้านหลัง",
     save: "บันทึกตำแหน่งที่ปวด",
-    saveNext: "บันทึกแล้วไปเปิดกล้อง",
+    saveNext: "ส่งไปยังเอเจนท์น้องจิมใจดี",
     clear: "ล้างทั้งหมด",
     saved: "บันทึกตำแหน่งที่ปวดเรียบร้อยแล้ว",
+    agentSaved: "บันทึกข้อมูลเพื่อส่งต่อให้น้องจิมใจดีแล้ว",
     cleared: "ล้างการเลือกทั้งหมดแล้ว",
     how: "How it works",
     howTitle: "Hover แล้วสีเปลี่ยน คลิกแล้วค้าง",
     how1: "เอาเมาส์ไปวางบนแต่ละส่วนเพื่อ preview ตำแหน่ง",
     how2: "คลิกเพื่อเลือกหรือยกเลิกการเลือกตำแหน่งที่ปวด",
-    how3: "กดบันทึกแล้วไปเปิดกล้อง เพื่อไปหน้าถัดไปของ flow",
+    how3: "กดบันทึกหรือส่งไปยังเอเจนท์ เพื่อเก็บผลไว้ใน flow",
     selected: "ตำแหน่งที่เลือก",
     none: "ยังไม่ได้เลือกตำแหน่งที่ปวด",
   },
@@ -100,22 +101,23 @@ const copy = {
     back: "Back to Assessment",
     eyebrow: "Body Map Mockup",
     title: "Select the body areas where pain is present",
-    body: "This page uses a clickable SVG body map so each area can highlight on hover, be selected individually, and then be saved before continuing to the camera step of the demo.",
+    body: "This page uses a clickable SVG body map so each area can highlight on hover, be selected individually, and then be saved as part of the demo flow.",
     noteTitle: "Important note",
     noteBody:
       "If you are not fully sure about the exact pain point, you can select multiple related areas at the same time. For example, shoulder pain can be marked across both shoulders, the upper back, or upper arm areas.",
     front: "Front",
     backView: "Back",
     save: "Save pain areas",
-    saveNext: "Save and open camera",
+    saveNext: "Send to Nong Jim Jaidee Agent",
     clear: "Clear all",
     saved: "Pain areas saved successfully",
+    agentSaved: "Pain areas were saved and prepared for the Nong Jim Jaidee Agent flow",
     cleared: "All selections were cleared",
     how: "How it works",
     howTitle: "Hover to preview, click to lock selection",
     how1: "Move the cursor over each area to preview the region",
     how2: "Click to select or unselect the pain location",
-    how3: "Use Save and open camera to continue the flow",
+    how3: "Use Save or send to the agent to keep this step in the flow",
     selected: "Selected areas",
     none: "No pain areas selected yet",
   },
@@ -145,6 +147,7 @@ export default function BodyMapPage() {
     setLang(value);
     saveDemoLang(value);
     if (savedNotice === copy.TH.saved || savedNotice === copy.EN.saved) setSavedNotice(copy[value].saved);
+    if (savedNotice === copy.TH.agentSaved || savedNotice === copy.EN.agentSaved) setSavedNotice(copy[value].agentSaved);
     if (savedNotice === copy.TH.cleared || savedNotice === copy.EN.cleared) setSavedNotice(copy[value].cleared);
   };
 
@@ -169,7 +172,7 @@ export default function BodyMapPage() {
 
   const saveAndContinue = () => {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(selected));
-    router.push("/camera");
+    router.push("/result");
   };
 
   const clearSelection = () => {

@@ -332,3 +332,58 @@
  GET /body-map 200 in 70ms
  GET /login 200 in 67ms
  GET /body-map 200 in 41ms
+ GET /body-map 200 in 63ms
+ GET /camera 200 in 59ms
+ GET /body-map 200 in 58ms
+ GET /body-map 200 in 44ms
+ GET /body-map 200 in 47ms
+ ✓ Compiled in 549ms (574 modules)
+ GET /body-map 200 in 97ms
+ ✓ Compiled in 566ms (574 modules)
+ GET /camera 200 in 83ms
+ ✓ Compiled in 478ms (574 modules)
+ GET /camera 200 in 94ms
+ ✓ Compiled in 457ms (574 modules)
+ ✓ Compiled in 356ms (574 modules)
+ GET /body-map 200 in 105ms
+ ✓ Compiled in 490ms (574 modules)
+ ✓ Compiled in 221ms (295 modules)
+ GET / 200 in 104ms
+ GET / 200 in 42ms
+ ✓ Compiled /login in 202ms (288 modules)
+ GET /login 200 in 367ms
+ GET /body-map 200 in 62ms
+ GET /body-map 200 in 39ms
+ ✓ Compiled in 1224ms (574 modules)
+ ✓ Compiled in 402ms (574 modules)
+ ✓ Compiled in 375ms (574 modules)
+ ✓ Compiled in 583ms (574 modules)
+ GET /camera 200 in 81ms
+ GET /body-map 200 in 111ms
+ ✓ Compiled in 638ms (574 modules)
+ ✓ Compiled in 584ms (560 modules)
+ ✓ Compiled /result in 497ms (568 modules)
+ GET /result 200 in 687ms
+ GET /body-map 200 in 640ms
+ ✓ Compiled in 896ms (576 modules)
+ GET /result 200 in 168ms
+ ✓ Compiled in 488ms (576 modules)
+ GET /result 200 in 108ms
+ ✓ Compiled in 422ms (576 modules)
+ GET /result 200 in 80ms
+ ✓ Compiled in 459ms (576 modules)
+ GET /result 200 in 86ms
+ GET /result 200 in 45ms
+ GET /result 200 in 55ms
+ ✓ Compiled in 456ms (576 modules)
+ GET /body-map 200 in 93ms
+ GET / 200 in 51ms
+ GET /result 200 in 81ms
+ ✓ Compiled in 482ms (576 modules)
+ GET /result 200 in 99ms
+ ✓ Compiled in 429ms (576 modules)
+ GET /result 200 in 96ms
+ GET /body-map 200 in 55ms
+ ✓ Compiled in 431ms (576 modules)
+ ✓ Compiled in 322ms (576 modules)
+ GET /result 200 in 100ms

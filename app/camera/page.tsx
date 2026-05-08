@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowLeft, Camera, CheckCircle2, ScanFace, ShieldCheck, Sparkles } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -73,8 +74,7 @@ const copy = {
     mockup: "Mockup",
     previewTitle: "พื้นที่แสดงภาพจากกล้อง",
     previewBody: "สำหรับเดโมตอนนี้ยังเป็นหน้าจำลอง เพื่อเตรียมต่อเข้ากับการตรวจจับท่าทางจริงในขั้นถัดไป",
-    openCamera: "เปิดกล้อง",
-    startPose: "เริ่มทดสอบท่า",
+    openCamera: "ติดต่อน้องจิมใจดี",
     carryTitle: "ข้อมูลที่พามาต่อ",
     carryBody: "ตำแหน่งที่ผู้ใช้เลือกไว้จาก Body Map",
     noData: "ยังไม่มีตำแหน่งที่บันทึกไว้",
@@ -95,8 +95,7 @@ const copy = {
     mockup: "Mockup",
     previewTitle: "Camera preview area",
     previewBody: "At the moment this is still a placeholder screen for the future real camera-based pose detection step.",
-    openCamera: "Open camera",
-    startPose: "Start pose test",
+    openCamera: "Contact Nong Jim Jaidee",
     carryTitle: "Carried data",
     carryBody: "Pain areas selected from the Body Map",
     noData: "No saved pain areas yet",
@@ -110,8 +109,16 @@ const copy = {
 } as const;
 
 export default function CameraPage() {
+  const router = useRouter();
   const [lang, setLang] = useState<DemoLang>("TH");
   const [selectedZones, setSelectedZones] = useState<BodyZoneId[]>([]);
+  const [showDisclaimer, setShowDisclaimer] = useState(false);
+  const [countdown, setCountdown] = useState(5);
+  const [cameraStatus, setCameraStatus] = useState<"idle" | "preparing">("idle");
+
+  useEffect(() => {
+    router.replace("/body-map");
+  }, [router]);
 
   useEffect(() => {
     const currentLang = loadDemoLang();
@@ -126,6 +133,25 @@ export default function CameraPage() {
     }
   }, []);
 
+  useEffect(() => {
+    if (!showDisclaimer) return;
+
+    setCountdown(5);
+    const intervalId = window.setInterval(() => {
+      setCountdown((current) => {
+        if (current <= 1) {
+          window.clearInterval(intervalId);
+          setShowDisclaimer(false);
+          setCameraStatus("preparing");
+          return 0;
+        }
+        return current - 1;
+      });
+    }, 1000);
+
+    return () => window.clearInterval(intervalId);
+  }, [showDisclaimer]);
+
   const setLanguage = (value: DemoLang) => {
     setLang(value);
     saveDemoLang(value);
@@ -137,6 +163,8 @@ export default function CameraPage() {
     () => selectedZones.map((zone) => zoneLabels[zone]?.[lang]).filter(Boolean),
     [selectedZones, lang],
   );
+
+  return null;
 
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,_#f5fbfb_0%,_#edf6ff_100%)] px-4 py-6 text-slate-900 sm:px-6 sm:py-8 lg:px-8">
@@ -192,19 +220,42 @@ export default function CameraPage() {
                       <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-teal-500/20 text-teal-200">
                         <ScanFace size={30} />
                       </div>
-                      <p className="mt-4 text-base font-black sm:text-lg">{t.previewTitle}</p>
-                      <p className="mt-2 max-w-xs text-sm font-medium leading-6 text-white/70 sm:leading-7">{t.previewBody}</p>
+                      <p className="mt-4 text-base font-black sm:text-lg">
+                        {cameraStatus === "preparing"
+                          ? lang === "TH"
+                            ? "กำลังเตรียมเปิดกล้อง"
+                            : "Preparing camera access"
+                          : t.previewTitle}
+                      </p>
+                      <p className="mt-2 max-w-xs text-sm font-medium leading-6 text-white/70 sm:leading-7">
+                        {cameraStatus === "preparing"
+                          ? lang === "TH"
+                            ? "เดโมจะหยุดไว้ที่ขั้นตอนยืนยันคำเตือนก่อนใช้งาน ยังไม่ได้เชื่อมต่อ camera API จริง"
+                            : "The demo stops at the warning-confirmation step and is not connected to a real camera API yet."
+                          : t.previewBody}
+                      </p>
                     </div>
                   </div>
 
-                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                    <Button className="h-12 rounded-2xl bg-teal-600 hover:bg-teal-700" type="button">
+                  <div className="mt-4 space-y-3">
+                    <Button
+                      className="h-12 rounded-2xl bg-teal-600 hover:bg-teal-700"
+                      type="button"
+                      onClick={() => {
+                        setCameraStatus("idle");
+                        setShowDisclaimer(true);
+                      }}
+                    >
                       <Camera size={16} />
                       {t.openCamera}
                     </Button>
-                    <Button className="h-12 rounded-2xl border-white/15 bg-white/5 text-white hover:bg-white/10 hover:text-white" type="button" variant="outline">
-                      {t.startPose}
-                    </Button>
+                    {cameraStatus === "preparing" ? (
+                      <p className="text-sm font-medium text-teal-100/90">
+                        {lang === "TH"
+                          ? "รับทราบคำเตือนแล้ว และกำลังเตรียมเข้าสู่ขั้นตอนกล้องของเดโม"
+                          : "Warning acknowledged. Preparing the camera step in the demo."}
+                      </p>
+                    ) : null}
                   </div>
                 </div>
               </div>
@@ -262,6 +313,33 @@ export default function CameraPage() {
           </div>
         </div>
       </div>
+
+      {showDisclaimer ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-xl rounded-[28px] border border-white/70 bg-white p-6 shadow-[0_30px_80px_rgba(15,23,42,0.30)] sm:p-8">
+            <div className="flex items-start gap-4">
+              <div className="rounded-2xl bg-amber-100 p-3 text-amber-700">
+                <ShieldCheck size={22} />
+              </div>
+              <div className="flex-1">
+                <p className="text-xl font-black text-slate-900 sm:text-2xl">
+                  {lang === "TH" ? "หมายเหตุก่อนใช้งาน" : "Before you continue"}
+                </p>
+                <p className="mt-3 text-sm font-medium leading-7 text-slate-700 sm:text-base">
+                  {lang === "TH"
+                    ? "แอปนี้เป็นเพียงการคัดกรองเบื้องต้นไม่ใช่เครื่องมือวินิจฉัยโรค หากปวดรุนแรง ปวดร้าว ชา อ่อนแรง หรือมีอาการต่อเนื่อง ควรปรึกษาผู้เชี่ยวชาญด้านสุขภาพ"
+                    : "This app is not a diagnostic tool. If you have severe pain, radiating pain, numbness, weakness, or persistent symptoms, you should consult a qualified health professional."}
+                </p>
+                <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-900">
+                  {lang === "TH"
+                    ? `ระบบจะดำเนินการต่อใน ${countdown} วินาที`
+                    : `The demo will continue in ${countdown} seconds`}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
